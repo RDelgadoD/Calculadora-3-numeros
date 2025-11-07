@@ -159,7 +159,8 @@ RETURNS TABLE (
   email VARCHAR,
   cliente_id UUID,
   cliente_nombre VARCHAR,
-  activo BOOLEAN
+  activo BOOLEAN,
+  rol VARCHAR
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -169,9 +170,12 @@ BEGIN
     u.email,
     u.cliente_id,
     c.nombre AS cliente_nombre,
-    u.activo
+    u.activo,
+    u.rol
   FROM usuarios u
   JOIN clientes c ON u.cliente_id = c.id
   WHERE u.id = user_uuid;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+GRANT EXECUTE ON FUNCTION get_user_info(UUID) TO authenticated;

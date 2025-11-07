@@ -15,35 +15,22 @@ export function useUserInfo(userId) {
     const fetchUserInfo = async () => {
       try {
         const { data, error } = await supabase
-          .from('usuarios')
-          .select(`
-            id,
-            nombre_completo,
-            email,
-            activo,
-            rol,
-            cliente_id,
-            clientes (
-              id,
-              nombre,
-              activo
-            )
-          `)
-          .eq('id', userId)
-          .single()
+          .rpc('get_user_info', { user_uuid: userId })
 
         if (error) throw error
 
-        if (data) {
+        const record = Array.isArray(data) ? data[0] : data
+
+        if (record) {
           setUserInfo({
-            id: data.id,
-            nombreCompleto: data.nombre_completo,
-            email: data.email,
-            activo: data.activo,
-            rol: data.rol || 'usuario',
-            clienteId: data.cliente_id,
-            clienteNombre: data.clientes?.nombre || 'Sin cliente asignado',
-            clienteActivo: data.clientes?.activo || false
+            id: record.id,
+            nombreCompleto: record.nombre_completo,
+            email: record.email,
+            activo: record.activo,
+            rol: record.rol || 'usuario',
+            clienteId: record.cliente_id,
+            clienteNombre: record.cliente_nombre || 'Sin cliente asignado',
+            clienteActivo: true
           })
         } else {
           setError('Usuario no encontrado en el sistema')
