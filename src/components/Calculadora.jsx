@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import '../App.css'
 import './Calculadora.css'
 
-function Calculadora({ user, userInfo }) {
+function Calculadora({ user, userInfo, loadingUserInfo }) {
   const [numero1, setNumero1] = useState('')
   const [numero2, setNumero2] = useState('')
   const [numero3, setNumero3] = useState('')
@@ -26,6 +26,16 @@ function Calculadora({ user, userInfo }) {
   }
 
   const calcular = async () => {
+    if (loadingUserInfo) {
+      setMensajeGuardado('Cargando información del usuario, intenta nuevamente en unos segundos')
+      return
+    }
+
+    if (!userInfo?.clienteId) {
+      setMensajeGuardado('No se encontró la entidad del usuario. Verifica la configuración en la tabla usuarios.')
+      return
+    }
+
     const n1 = parseFloat(numero1)
     const n2 = parseFloat(numero2)
     const n3 = parseFloat(numero3)
@@ -57,6 +67,10 @@ function Calculadora({ user, userInfo }) {
     setMensajeGuardado(null)
 
     try {
+      if (!userInfo?.clienteId) {
+        throw new Error('El usuario no tiene cliente asignado')
+      }
+
       const { data, error } = await supabase
         .from('calculos')
         .insert([
@@ -67,7 +81,7 @@ function Calculadora({ user, userInfo }) {
             operacion: operacion,
             resultado: resultado.toString(),
             user_id: user.id,
-            cliente_id: userInfo?.clienteId || null
+            cliente_id: userInfo.clienteId
           }
         ])
         .select()
@@ -99,6 +113,18 @@ function Calculadora({ user, userInfo }) {
     <div className="calculadora-wrapper">
       <div className="calculadora-container">
         <h2>Realiza tus Cálculos</h2>
+
+        {loadingUserInfo && (
+          <div className="mensaje info">
+            Cargando información de tu entidad...
+          </div>
+        )}
+
+        {!loadingUserInfo && !userInfo?.clienteId && (
+          <div className="mensaje error">
+            No se pudo identificar tu entidad. Contacta al administrador.
+          </div>
+        )}
         
         <div className="form-group">
           <label htmlFor="numero1">Primer Número:</label>
@@ -154,7 +180,7 @@ function Calculadora({ user, userInfo }) {
           <button 
             onClick={calcular} 
             className="btn-calculate"
-            disabled={guardando}
+            disabled={guardando || loadingUserInfo || !userInfo?.clienteId}
           >
             {guardando ? 'Guardando...' : 'Calcular'}
           </button>

@@ -120,7 +120,13 @@ function Dashboard({ user, onLogout }) {
               <p>Selecciona una opción del menú para comenzar</p>
             </div>
           )}
-          {activeView === 'calculadora' && <Calculadora user={user} userInfo={userInfo} />}
+          {activeView === 'calculadora' && (
+            <Calculadora
+              user={user}
+              userInfo={userInfo}
+              loadingUserInfo={loadingUserInfo}
+            />
+          )}
           {activeView === 'consulta' && <ConsultaOperaciones currentUser={user} userInfo={userInfo} />}
           {activeView === 'admin' && userInfo?.rol === 'admin' && <Admin userInfo={userInfo} />}
         </div>

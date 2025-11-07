@@ -184,6 +184,12 @@ button {
   border: 1px solid #f5c6cb;
 }
 
+.mensaje.info {
+  background-color: #e2f0ff;
+  color: #0b5394;
+  border: 1px solid #9fc5f8;
+}
+
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
