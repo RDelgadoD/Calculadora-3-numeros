@@ -5,7 +5,7 @@ import autoTable from 'jspdf-autotable'
 import * as XLSX from 'xlsx'
 import './ConsultaOperaciones.css'
 
-function ConsultaOperaciones({ currentUser }) {
+function ConsultaOperaciones({ currentUser, userInfo }) {
   const [usuarios, setUsuarios] = useState([])
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState('')
   const [fechaInicio, setFechaInicio] = useState('')
@@ -15,49 +15,46 @@ function ConsultaOperaciones({ currentUser }) {
   const [mensaje, setMensaje] = useState(null)
 
   useEffect(() => {
-    cargarUsuarios()
-  }, [])
+    if (userInfo?.clienteId) {
+      cargarUsuarios()
+    }
+  }, [userInfo])
 
   const cargarUsuarios = async () => {
     try {
-      // Obtener todos los usuarios únicos que tienen cálculos
-      const { data, error } = await supabase
-        .from('calculos')
-        .select('user_id')
-        .order('user_id')
-
-      if (error) throw error
-
-      // Obtener información de usuarios únicos
-      const userIdsUnicos = [...new Set(data.map(item => item.user_id).filter(Boolean))]
-      
-      const usuariosData = []
-      
-      // Agregar el usuario actual primero
-      usuariosData.push({
-        id: currentUser.id,
-        email: currentUser.email || currentUser.id.substring(0, 8) + '...',
-        isCurrent: true
-      })
-
-      // Agregar otros usuarios
-      for (const userId of userIdsUnicos) {
-        if (userId !== currentUser.id) {
-          usuariosData.push({
-            id: userId,
-            email: userId.substring(0, 8) + '...',
-            isCurrent: false
-          })
-        }
+      if (!userInfo?.clienteId) {
+        setUsuarios([{
+          id: currentUser.id,
+          email: currentUser.email || currentUser.id.substring(0, 8) + '...'
+        }])
+        return
       }
 
-      setUsuarios(usuariosData)
+      // Obtener todos los usuarios del mismo cliente
+      const { data: usuariosData, error: usuariosError } = await supabase
+        .from('usuarios')
+        .select('id, nombre_completo, email')
+        .eq('cliente_id', userInfo.clienteId)
+        .eq('activo', true)
+        .order('nombre_completo')
+
+      if (usuariosError) throw usuariosError
+
+      // Formatear datos de usuarios
+      const usuariosFormateados = usuariosData.map(u => ({
+        id: u.id,
+        email: u.email,
+        nombre: u.nombre_completo
+      }))
+
+      setUsuarios(usuariosFormateados)
     } catch (error) {
       console.error('Error al cargar usuarios:', error)
       // Si hay error, al menos mostrar el usuario actual
       setUsuarios([{
         id: currentUser.id,
-        email: currentUser.email || currentUser.id.substring(0, 8) + '...'
+        email: currentUser.email || currentUser.id.substring(0, 8) + '...',
+        nombre: userInfo?.nombreCompleto || ''
       }])
     }
   }
@@ -67,9 +64,16 @@ function ConsultaOperaciones({ currentUser }) {
     setMensaje(null)
 
     try {
+      if (!userInfo?.clienteId) {
+        setMensaje('Error: No se pudo identificar el cliente del usuario')
+        setCargando(false)
+        return
+      }
+
       let query = supabase
         .from('calculos')
         .select('*')
+        .eq('cliente_id', userInfo.clienteId) // Solo cálculos del mismo cliente
         .order('created_at', { ascending: false })
 
       // Filtrar por usuario si está seleccionado
@@ -234,7 +238,7 @@ function ConsultaOperaciones({ currentUser }) {
             <option value="">Todos los usuarios</option>
             {usuarios.map(usuario => (
               <option key={usuario.id} value={usuario.id}>
-                {usuario.email}
+                {usuario.nombre ? `${usuario.nombre} (${usuario.email})` : usuario.email}
               </option>
             ))}
           </select>

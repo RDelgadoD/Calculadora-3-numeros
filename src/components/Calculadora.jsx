@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import '../App.css'
 import './Calculadora.css'
 
-function Calculadora({ user }) {
+function Calculadora({ user, userInfo }) {
   const [numero1, setNumero1] = useState('')
   const [numero2, setNumero2] = useState('')
   const [numero3, setNumero3] = useState('')
@@ -66,7 +66,8 @@ function Calculadora({ user }) {
             numero3: n3,
             operacion: operacion,
             resultado: resultado.toString(),
-            user_id: user.id
+            user_id: user.id,
+            cliente_id: userInfo?.clienteId || null
           }
         ])
         .select()

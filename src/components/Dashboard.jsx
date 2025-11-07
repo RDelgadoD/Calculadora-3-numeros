@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { useUserInfo } from '../lib/useUserInfo'
 import Calculadora from './Calculadora'
 import ConsultaOperaciones from './ConsultaOperaciones'
+import Admin from './Admin'
 import './Dashboard.css'
 
 function Dashboard({ user, onLogout }) {
   const [activeView, setActiveView] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
+  const { userInfo, loading: loadingUserInfo } = useUserInfo(user?.id)
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -48,7 +51,14 @@ function Dashboard({ user, onLogout }) {
             {menuOpen && (
               <div className="user-dropdown">
                 <div className="user-info-header">
-                  <p className="user-email">{user.email}</p>
+                  {userInfo && (
+                    <>
+                      <p className="user-name">{userInfo.nombreCompleto}</p>
+                      <p className="user-email">{user.email}</p>
+                      <p className="user-entidad">Entidad: {userInfo.clienteNombre}</p>
+                    </>
+                  )}
+                  {!userInfo && <p className="user-email">{user.email}</p>}
                 </div>
                 <button onClick={handleLogout} className="logout-option">
                   Cerrar Sesión
@@ -76,18 +86,43 @@ function Dashboard({ user, onLogout }) {
               <span className="nav-icon">📊</span>
               <span className="nav-text">Consulta de operaciones</span>
             </button>
+            {userInfo?.rol === 'admin' && (
+              <button
+                className={`nav-item ${activeView === 'admin' ? 'active' : ''}`}
+                onClick={() => setActiveView('admin')}
+              >
+                <span className="nav-icon">⚙️</span>
+                <span className="nav-text">Administración</span>
+              </button>
+            )}
           </div>
         </nav>
 
         <div className="dashboard-content-area">
           {activeView === null && (
             <div className="empty-state">
-              <h2>Bienvenido</h2>
+              <h2>
+                {loadingUserInfo ? (
+                  'Cargando...'
+                ) : userInfo ? (
+                  <>
+                    Bienvenido {userInfo.nombreCompleto}
+                  </>
+                ) : (
+                  'Bienvenido'
+                )}
+              </h2>
+              {userInfo && (
+                <p className="entidad-info">
+                  <strong>Entidad:</strong> {userInfo.clienteNombre}
+                </p>
+              )}
               <p>Selecciona una opción del menú para comenzar</p>
             </div>
           )}
-          {activeView === 'calculadora' && <Calculadora user={user} />}
-          {activeView === 'consulta' && <ConsultaOperaciones currentUser={user} />}
+          {activeView === 'calculadora' && <Calculadora user={user} userInfo={userInfo} />}
+          {activeView === 'consulta' && <ConsultaOperaciones currentUser={user} userInfo={userInfo} />}
+          {activeView === 'admin' && userInfo?.rol === 'admin' && <Admin userInfo={userInfo} />}
         </div>
       </div>
     </div>
