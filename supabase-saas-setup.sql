@@ -73,6 +73,7 @@ DROP POLICY IF EXISTS "Admins ven todos los clientes" ON clientes;
 DROP POLICY IF EXISTS "Admins pueden insertar clientes" ON clientes;
 DROP POLICY IF EXISTS clientes_select_mine ON clientes;
 DROP POLICY IF EXISTS clientes_insert_admin ON clientes;
+DROP POLICY IF EXISTS clientes_update_admin ON clientes;
 
 CREATE POLICY clientes_select_mine
   ON clientes
@@ -86,6 +87,13 @@ CREATE POLICY clientes_insert_admin
   ON clientes
   FOR INSERT
   TO authenticated
+  WITH CHECK (fn_user_is_admin(auth.uid()));
+
+CREATE POLICY clientes_update_admin
+  ON clientes
+  FOR UPDATE
+  TO authenticated
+  USING (fn_user_is_admin(auth.uid()))
   WITH CHECK (fn_user_is_admin(auth.uid()));
 
 -- 8. Políticas para usuarios
