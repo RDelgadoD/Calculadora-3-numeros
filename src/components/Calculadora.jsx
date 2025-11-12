@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import '../App.css'
 import './Calculadora.css'
@@ -11,6 +11,18 @@ function Calculadora({ user, userInfo, loadingUserInfo }) {
   const [resultado, setResultado] = useState(null)
   const [guardando, setGuardando] = useState(false)
   const [mensajeGuardado, setMensajeGuardado] = useState(null)
+
+  useEffect(() => {
+    if (user && userInfo) {
+      console.log('[Calculadora] Usuario autenticado', {
+        userId: user.id,
+        email: user.email,
+        clienteId: userInfo?.clienteId,
+        clienteNombre: userInfo?.clienteNombre,
+        rol: userInfo?.rol,
+      })
+    }
+  }, [user, userInfo])
 
   const operaciones = {
     suma: (a, b, c) => a + b + c,
@@ -71,6 +83,14 @@ function Calculadora({ user, userInfo, loadingUserInfo }) {
         throw new Error('El usuario no tiene cliente asignado')
       }
 
+      console.log('[Calculadora] Intentando guardar cálculo', {
+        userId: user.id,
+        clienteId: userInfo.clienteId,
+        operacion,
+        numeros: [n1, n2, n3],
+        resultado,
+      })
+
       const { data, error } = await supabase
         .from('calculos')
         .insert([
@@ -87,15 +107,15 @@ function Calculadora({ user, userInfo, loadingUserInfo }) {
         .select()
 
       if (error) {
-        console.error('Error al guardar:', error)
-        setMensajeGuardado('Error al guardar el cálculo')
+        console.error('[Calculadora] Error al guardar cálculo:', error)
+        setMensajeGuardado(`Error al guardar el cálculo: ${error.message || error.details || 'desconocido'}`)
       } else {
         setMensajeGuardado('✓ Cálculo guardado exitosamente')
         setTimeout(() => setMensajeGuardado(null), 3000)
       }
     } catch (error) {
-      console.error('Error inesperado:', error)
-      setMensajeGuardado('Error al guardar el cálculo')
+      console.error('[Calculadora] Error inesperado al guardar cálculo:', error)
+      setMensajeGuardado(`Error inesperado al guardar el cálculo: ${error.message}`)
     } finally {
       setGuardando(false)
     }

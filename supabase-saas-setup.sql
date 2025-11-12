@@ -35,110 +35,115 @@ CREATE INDEX IF NOT EXISTS idx_calculos_user_cliente ON calculos(user_id, client
 ALTER TABLE clientes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
 
--- 6. Políticas para clientes
-CREATE POLICY "Los usuarios solo ven su propio cliente"
+-- 6. Funciones auxiliares para políticas (evitan recursividad)
+CREATE OR REPLACE FUNCTION fn_get_user_cliente_id(user_uuid UUID)
+RETURNS UUID AS $$
+DECLARE
+  _cliente_id UUID;
+BEGIN
+  SELECT cliente_id INTO _cliente_id
+  FROM usuarios
+  WHERE id = user_uuid
+  LIMIT 1;
+
+  RETURN _cliente_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+CREATE OR REPLACE FUNCTION fn_user_is_admin(user_uuid UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+  _is_admin BOOLEAN;
+BEGIN
+  SELECT (rol = 'admin') INTO _is_admin
+  FROM usuarios
+  WHERE id = user_uuid
+  LIMIT 1;
+
+  RETURN COALESCE(_is_admin, false);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+GRANT EXECUTE ON FUNCTION fn_get_user_cliente_id(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION fn_user_is_admin(UUID) TO authenticated;
+
+-- 7. Políticas para clientes
+DROP POLICY IF EXISTS "Los usuarios solo ven su propio cliente" ON clientes;
+DROP POLICY IF EXISTS "Admins ven todos los clientes" ON clientes;
+DROP POLICY IF EXISTS "Admins pueden insertar clientes" ON clientes;
+DROP POLICY IF EXISTS clientes_select_mine ON clientes;
+DROP POLICY IF EXISTS clientes_insert_admin ON clientes;
+
+CREATE POLICY clientes_select_mine
   ON clientes
   FOR SELECT
   TO authenticated
   USING (
-    id IN (
-      SELECT cliente_id FROM usuarios WHERE id = auth.uid()
-    ) OR
-    -- Los admins pueden ver todos los clientes
-    id IN (
-      SELECT cliente_id FROM usuarios WHERE id = auth.uid() AND rol = 'admin'
-    )
+    id = fn_get_user_cliente_id(auth.uid()) OR fn_user_is_admin(auth.uid())
   );
 
--- Política alternativa: Admins ven todos los clientes
-CREATE POLICY "Admins ven todos los clientes"
+CREATE POLICY clientes_insert_admin
   ON clientes
-  FOR SELECT
+  FOR INSERT
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM usuarios 
-      WHERE id = auth.uid() AND rol = 'admin'
-    )
-  );
+  WITH CHECK (fn_user_is_admin(auth.uid()));
 
--- 7. Políticas para usuarios
-CREATE POLICY "Usuarios ven solo usuarios de su cliente"
+-- 8. Políticas para usuarios
+DROP POLICY IF EXISTS "Usuarios ven solo usuarios de su cliente" ON usuarios;
+DROP POLICY IF EXISTS "Admins pueden insertar usuarios" ON usuarios;
+DROP POLICY IF EXISTS "Admins pueden actualizar usuarios" ON usuarios;
+DROP POLICY IF EXISTS usuarios_select_mine ON usuarios;
+DROP POLICY IF EXISTS usuarios_insert_admin ON usuarios;
+DROP POLICY IF EXISTS usuarios_update_admin ON usuarios;
+
+CREATE POLICY usuarios_select_mine
   ON usuarios
   FOR SELECT
   TO authenticated
   USING (
-    cliente_id IN (
-      SELECT cliente_id FROM usuarios WHERE id = auth.uid()
-    ) OR
-    -- Los admins pueden ver todos los usuarios
-    EXISTS (
-      SELECT 1 FROM usuarios 
-      WHERE id = auth.uid() AND rol = 'admin'
-    )
+    cliente_id = fn_get_user_cliente_id(auth.uid()) OR fn_user_is_admin(auth.uid())
   );
 
--- 8. Política para insertar usuarios (solo admins)
-CREATE POLICY "Admins pueden insertar usuarios"
+CREATE POLICY usuarios_insert_admin
   ON usuarios
   FOR INSERT
   TO authenticated
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM usuarios 
-      WHERE id = auth.uid() AND rol = 'admin'
-    )
-  );
+  WITH CHECK (fn_user_is_admin(auth.uid()));
 
--- Política para actualizar usuarios (solo admins)
-CREATE POLICY "Admins pueden actualizar usuarios"
+CREATE POLICY usuarios_update_admin
   ON usuarios
   FOR UPDATE
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM usuarios 
-      WHERE id = auth.uid() AND rol = 'admin'
-    )
-  );
+  USING (fn_user_is_admin(auth.uid()));
 
--- Política para insertar clientes (solo admins)
-CREATE POLICY "Admins pueden insertar clientes"
-  ON clientes
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM usuarios 
-      WHERE id = auth.uid() AND rol = 'admin'
-    )
-  );
 
 -- 9. Actualizar políticas de calculos para incluir cliente_id
 DROP POLICY IF EXISTS "Solo usuarios autenticados pueden insertar" ON calculos;
 DROP POLICY IF EXISTS "Usuarios ven solo sus cálculos" ON calculos;
+DROP POLICY IF EXISTS calculos_insert_cliente ON calculos;
+DROP POLICY IF EXISTS calculos_select_cliente ON calculos;
 
 -- Nueva política: Usuarios solo pueden insertar cálculos de su cliente
-CREATE POLICY "Usuarios insertan cálculos de su cliente"
+CREATE POLICY calculos_insert_cliente
   ON calculos
   FOR INSERT
   TO authenticated
   WITH CHECK (
     auth.uid() = user_id AND
-    cliente_id IN (
-      SELECT cliente_id FROM usuarios WHERE id = auth.uid()
+    (
+      cliente_id = fn_get_user_cliente_id(auth.uid())
+      OR fn_user_is_admin(auth.uid())
     )
   );
 
 -- Nueva política: Usuarios solo ven cálculos de su cliente
-CREATE POLICY "Usuarios ven cálculos de su cliente"
+CREATE POLICY calculos_select_cliente
   ON calculos
   FOR SELECT
   TO authenticated
   USING (
-    cliente_id IN (
-      SELECT cliente_id FROM usuarios WHERE id = auth.uid()
-    )
+    cliente_id = fn_get_user_cliente_id(auth.uid())
+    OR fn_user_is_admin(auth.uid())
   );
 
 -- 10. Función para crear usuario automáticamente después del registro
