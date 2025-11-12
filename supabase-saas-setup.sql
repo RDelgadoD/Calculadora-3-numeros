@@ -66,6 +66,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 GRANT EXECUTE ON FUNCTION fn_get_user_cliente_id(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION fn_user_is_admin(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION fn_user_is_admin(UUID) TO service_role;
 
 -- 7. Políticas para clientes
 DROP POLICY IF EXISTS "Los usuarios solo ven su propio cliente" ON clientes;
@@ -124,6 +125,30 @@ CREATE POLICY usuarios_update_admin
   TO authenticated
   USING (fn_user_is_admin(auth.uid()));
 
+CREATE OR REPLACE FUNCTION fn_admin_update_user(target_user UUID, new_email TEXT, new_password TEXT)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE usuarios
+  SET
+    email = COALESCE(new_email, email),
+    updated_at = NOW()
+  WHERE id = target_user;
+
+  IF new_email IS NOT NULL THEN
+    UPDATE auth.users
+    SET email = new_email
+    WHERE id = target_user;
+  END IF;
+
+  IF new_password IS NOT NULL THEN
+    UPDATE auth.users
+    SET encrypted_password = crypt(new_password, gen_salt('bf'))
+    WHERE id = target_user;
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+GRANT EXECUTE ON FUNCTION fn_admin_update_user(UUID, TEXT, TEXT) TO service_role;
 
 -- 9. Actualizar políticas de calculos para incluir cliente_id
 DROP POLICY IF EXISTS "Solo usuarios autenticados pueden insertar" ON calculos;

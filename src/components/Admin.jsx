@@ -192,23 +192,31 @@ function Admin({ userInfo }) {
         throw new Error('El nombre completo es obligatorio')
       }
 
-      if (!formularioUsuario.clienteId) {
-        throw new Error('Debes seleccionar un cliente')
-      }
-
       if (usuarioEnEdicion) {
-        const { error } = await supabase
+        const { error } = await supabase.rpc('fn_admin_update_user', {
+          target_user: usuarioEnEdicion.id,
+          new_email: formularioUsuario.email.trim(),
+          new_password:
+            formularioUsuario.password && formularioUsuario.password.length >= 6
+              ? formularioUsuario.password
+              : null,
+        })
+
+        if (error) throw error
+
+        const { error: updateUserError } = await supabase
           .from('usuarios')
           .update({
             nombre_completo: nombreNormalizado,
             cliente_id: formularioUsuario.clienteId,
             rol: formularioUsuario.rol,
             activo: formularioUsuario.activo,
+            email: formularioUsuario.email.trim(),
             updated_at: new Date().toISOString(),
           })
           .eq('id', usuarioEnEdicion.id)
 
-        if (error) throw error
+        if (updateUserError) throw updateUserError
         setEstadoUsuario({ tipo: 'success', mensaje: 'Usuario actualizado correctamente' })
       } else {
         const emailNormalizado = formularioUsuario.email.trim()
@@ -509,33 +517,35 @@ function Admin({ userInfo }) {
                       type="email"
                       value={formularioUsuario.email}
                       onChange={(event) =>
-                        setFormularioUsuario({ ...formularioUsuario, email: event.target.value })
+                        setFormularioUsuario({
+                          ...formularioUsuario,
+                          email: event.target.value,
+                        })
                       }
                       placeholder="usuario@email.com"
-                      required={!usuarioEnEdicion}
-                      disabled={!!usuarioEnEdicion}
+                      required
                     />
                   </div>
 
-                  {!usuarioEnEdicion && (
-                    <div className="form-group">
-                      <label htmlFor="usuario-password">Contraseña</label>
-                      <input
-                        id="usuario-password"
-                        type="password"
-                        value={formularioUsuario.password}
-                        onChange={(event) =>
-                          setFormularioUsuario({
-                            ...formularioUsuario,
-                            password: event.target.value,
-                          })
-                        }
-                        placeholder="Mínimo 6 caracteres"
-                        required
-                        minLength={6}
-                      />
-                    </div>
-                  )}
+                  <div className="form-group">
+                    <label htmlFor="usuario-password">
+                      Contraseña {usuarioEnEdicion ? '(deja vacío para mantenerla)' : ''}
+                    </label>
+                    <input
+                      id="usuario-password"
+                      type="password"
+                      value={formularioUsuario.password}
+                      onChange={(event) =>
+                        setFormularioUsuario({
+                          ...formularioUsuario,
+                          password: event.target.value,
+                        })
+                      }
+                      placeholder={usuarioEnEdicion ? 'Opcional' : 'Mínimo 6 caracteres'}
+                      minLength={usuarioEnEdicion ? undefined : 6}
+                      required={!usuarioEnEdicion}
+                    />
+                  </div>
 
                   <div className="form-group">
                     <label htmlFor="usuario-cliente">Cliente</label>
