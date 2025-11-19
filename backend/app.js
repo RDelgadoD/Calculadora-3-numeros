@@ -21,8 +21,26 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 // Middleware
+// En Vercel, permitir el origen de Vercel automáticamente
+const allowedOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+  : ['http://localhost:5173']
+
+// Si estamos en Vercel, agregar el origen de Vercel automáticamente
+if (process.env.VERCEL_URL) {
+  allowedOrigins.push(`https://${process.env.VERCEL_URL}`)
+}
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // Permitir requests sin origen (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true)
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.VERCEL) {
+      callback(null, true)
+    } else {
+      callback(new Error('No permitido por CORS'))
+    }
+  },
   credentials: true
 }))
 app.use(express.json({ limit: '10mb' }))
@@ -58,11 +76,14 @@ app.use((req, res) => {
   })
 })
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor backend corriendo en http://localhost:${PORT}`)
-  console.log(`📝 Entorno: ${process.env.NODE_ENV || 'development'}`)
-})
+// Iniciar servidor solo si no estamos en un entorno serverless (Vercel)
+// Vercel proporciona la variable de entorno VERCEL
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor backend corriendo en http://localhost:${PORT}`)
+    console.log(`📝 Entorno: ${process.env.NODE_ENV || 'development'}`)
+  })
+}
 
 export default app
 
