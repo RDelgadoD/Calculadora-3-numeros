@@ -20,6 +20,11 @@
   z-index: 100;
 }
 
+.topbar-left {
+  display: flex;
+  align-items: center;
+}
+
 .topbar-left h1 {
   margin: 0;
   font-size: 1.25rem;
@@ -138,62 +143,202 @@
 }
 
 .dashboard-sidebar {
-  width: 240px;
-  background: #1f2937;
-  color: #9ca3af;
-  padding: 16px 0;
+  width: 220px;
+  background: #1e293b;
+  color: #cbd5e1;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.dashboard-sidebar.collapsed {
+  width: 56px;
+}
+
+.sidebar-toggle-topbar {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 32px;
+  height: 32px;
+  justify-content: center;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.sidebar-toggle-topbar span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: white;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.sidebar-toggle-topbar:hover span {
+  background: #a8e6cf;
+}
+
+.dashboard-sidebar.collapsed .nav-text {
+  display: none;
+}
+
+.dashboard-sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 12px;
+}
+
+.dashboard-sidebar.collapsed .nav-icon {
+  margin: 0;
+}
+
+.no-permissions-message {
+  padding: 24px;
+  text-align: center;
+  color: #666;
+}
+
+.no-permissions-message p {
+  margin: 8px 0;
+  font-size: 0.9rem;
 }
 
 .sidebar-section {
-  padding: 0 8px;
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .nav-item {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 8px 12px;
   border: none;
   background: transparent;
-  color: #9ca3af;
-  font-size: 0.875rem;
-  font-weight: 500;
+  color: #cbd5e1;
+  font-size: 0.8125rem;
+  font-weight: 400;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 6px;
-  margin-bottom: 4px;
+  transition: all 0.15s ease;
+  border-radius: 0;
+  margin: 0;
   text-align: left;
+  border-left: 3px solid transparent;
 }
 
 .nav-item:hover {
-  background: #374151;
-  color: #d1d5db;
+  background: #334155;
+  color: #f1f5f9;
 }
 
 .nav-item.active {
-  background: #4ade80;
-  color: white;
-  font-weight: 600;
+  background: #334155;
+  color: #4ade80;
+  font-weight: 500;
+  border-left-color: #4ade80;
 }
 
 .nav-item.active:hover {
-  background: #3dc973;
+  background: #334155;
+  color: #4ade80;
 }
 
 .nav-icon {
-  font-size: 1.125rem;
+  font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
+  width: 18px;
+  flex-shrink: 0;
 }
 
 .nav-text {
   flex: 1;
+}
+
+.nav-item-wrapper {
+  position: relative;
+}
+
+.nav-item.has-submenu {
+  justify-content: space-between;
+}
+
+.nav-arrow {
+  font-size: 0.625rem;
+  transition: transform 0.2s ease;
+  color: #94a3b8;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.nav-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.nav-submenu {
+  margin-left: 0;
+  margin-top: 0;
+  padding-left: 0;
+  border-left: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #0f172a;
+}
+
+.nav-submenu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 36px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-radius: 0;
+  text-align: left;
+  width: 100%;
+  border-left: 3px solid transparent;
+}
+
+.nav-submenu-item:hover {
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+.nav-submenu-item.active {
+  background: #1e293b;
+  color: #4ade80;
+  font-weight: 500;
+  border-left-color: #4ade80;
+}
+
+.nav-submenu-icon {
+  font-size: 0.9rem;
+  width: 16px;
+  text-align: center;
+}
+
+.nav-submenu-text {
+  flex: 1;
+}
+
+.dashboard-sidebar.collapsed .nav-submenu {
+  display: none;
 }
 
 .dashboard-content-area {
@@ -234,6 +379,11 @@
 
 .entidad-info strong {
   font-weight: 600;
+}
+
+/* Ventanas modales movibles (cotizaciones, descuentos, etc.) */
+.draggable-handle {
+  cursor: move;
 }
 
 /* Responsive */

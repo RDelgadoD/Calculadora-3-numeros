@@ -1,0 +1,227 @@
+.contract-list-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.contract-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.contract-list-header h2 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.btn-create {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.3s;
+  white-space: nowrap;
+  height: auto;
+}
+
+.btn-create:hover {
+  background-color: #229954;
+}
+
+.btn-create span {
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.contracts-table-wrapper {
+  overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.contracts-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.contracts-table thead {
+  background-color: #f8f9fa;
+}
+
+.contracts-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 2px solid #dee2e6;
+  cursor: pointer;
+  user-select: none;
+}
+
+.contracts-table th:hover {
+  background-color: #e9ecef;
+}
+
+.contracts-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.contracts-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.empty-message {
+  text-align: center;
+  color: #6c757d;
+  padding: 40px !important;
+}
+
+.btn-edit,
+.btn-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 5px 10px;
+  margin: 0 5px;
+  transition: transform 0.2s;
+}
+
+.btn-edit:hover,
+.btn-delete:hover {
+  transform: scale(1.2);
+}
+
+.estado-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.estado-proceso-de-firma {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.estado-firmado {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.estado-acta-de-inicio {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.estado-en-ejecución {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.estado-suspendido {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.estado-terminado {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.estado-liquidado {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.btn-pagination {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-pagination:hover:not(:disabled) {
+  background-color: #229954;
+}
+
+.btn-pagination:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+}
+
+.mensaje {
+  padding: 12px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.mensaje.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+@media (max-width: 768px) {
+  .contract-list-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+
+  .btn-create {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .contracts-table {
+    font-size: 14px;
+  }
+
+  .contracts-table th,
+  .contracts-table td {
+    padding: 8px;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
