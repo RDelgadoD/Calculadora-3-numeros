@@ -22,13 +22,25 @@ const PORT = process.env.PORT || 3001
 
 // Middleware
 // En Vercel, permitir el origen de Vercel automáticamente
-const allowedOrigins = process.env.CORS_ORIGIN 
-  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+const corsOrigin = process.env.CORS_ORIGIN?.trim() || ''
+const allowedOrigins = corsOrigin
+  ? corsOrigin.split(',').map(o => o.trim()).filter(o => o.length > 0)
   : ['http://localhost:5173']
 
 // Si estamos en Vercel, agregar el origen de Vercel automáticamente
 if (process.env.VERCEL_URL) {
-  allowedOrigins.push(`https://${process.env.VERCEL_URL}`)
+  const vercelOrigin = `https://${process.env.VERCEL_URL}`
+  if (!allowedOrigins.includes(vercelOrigin)) {
+    allowedOrigins.push(vercelOrigin)
+  }
+}
+
+// También agregar el dominio completo si está disponible
+if (process.env.VERCEL && process.env.VERCEL_URL) {
+  const vercelFullOrigin = `https://${process.env.VERCEL_URL}`
+  if (!allowedOrigins.includes(vercelFullOrigin)) {
+    allowedOrigins.push(vercelFullOrigin)
+  }
 }
 
 app.use(cors({
