@@ -6,13 +6,32 @@ import OpenAI from 'openai'
 import dotenv from 'dotenv'
 
 // Cargar variables de entorno
-if (!process.env.OPENAI_API_KEY) {
-  dotenv.config()
-}
+dotenv.config()
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
+// Inicialización lazy del cliente OpenAI (solo cuando se necesite)
+let openaiClient = null
+
+/**
+ * Obtener o crear el cliente de OpenAI
+ * @returns {OpenAI} Cliente de OpenAI
+ */
+function getOpenAIClient() {
+  if (!openaiClient) {
+    const apiKey = process.env.OPENAI_API_KEY?.trim()
+    
+    if (!apiKey) {
+      // No lanzar error aquí, solo cuando se intente usar
+      console.warn('⚠️ OPENAI_API_KEY no está configurada. El servicio de chat no funcionará.')
+      return null
+    }
+    
+    openaiClient = new OpenAI({
+      apiKey: apiKey
+    })
+  }
+  
+  return openaiClient
+}
 
 /**
  * Esquema de la base de datos para contexto
@@ -150,8 +169,14 @@ const DATABASE_SCHEMA = `
  * @returns {Promise<{sql: string, explanation: string}>}
  */
 export async function generateSQL(question, clienteId, conversationContext = '') {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY no está configurada en las variables de entorno')
+  const openai = getOpenAIClient()
+  
+  if (!openai) {
+    const apiKey = process.env.OPENAI_API_KEY?.trim()
+    if (!apiKey) {
+      throw new Error('OPENAI_API_KEY no está configurada en las variables de entorno. Por favor, configura la variable en Vercel Settings > Environment Variables.')
+    }
+    throw new Error('No se pudo inicializar el cliente de OpenAI')
   }
 
   const systemPrompt = `Eres un experto en PostgreSQL y generación de consultas SQL. 

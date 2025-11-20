@@ -17,15 +17,18 @@ const supabaseUrl = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL)?
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
 const supabaseAnonKey = (process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY)?.trim()
 
-// Log de diagnóstico (solo en desarrollo o cuando hay error)
-if (process.env.NODE_ENV === 'development' || !supabaseUrl || !supabaseServiceKey) {
+// Log de diagnóstico (siempre en Vercel, o en desarrollo, o cuando hay error)
+if (process.env.VERCEL || process.env.NODE_ENV === 'development' || !supabaseUrl || !supabaseServiceKey) {
   console.log('🔍 Diagnóstico de variables de entorno:')
-  console.log('  SUPABASE_URL:', process.env.SUPABASE_URL ? '✅' : '❌')
-  console.log('  VITE_SUPABASE_URL:', process.env.VITE_SUPABASE_URL ? '✅' : '❌')
+  console.log('  Entorno:', process.env.VERCEL ? 'Vercel' : process.env.NODE_ENV || 'production')
+  console.log('  SUPABASE_URL:', process.env.SUPABASE_URL ? `✅ (${process.env.SUPABASE_URL.substring(0, 30)}...)` : '❌')
+  console.log('  VITE_SUPABASE_URL:', process.env.VITE_SUPABASE_URL ? `✅ (${process.env.VITE_SUPABASE_URL.substring(0, 30)}...)` : '❌')
   console.log('  SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅' : '❌')
   console.log('  SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? '✅' : '❌')
   console.log('  VITE_SUPABASE_ANON_KEY:', process.env.VITE_SUPABASE_ANON_KEY ? '✅' : '❌')
+  console.log('  OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? '✅' : '❌')
   console.log('  Todas las variables SUPABASE:', Object.keys(process.env).filter(k => k.includes('SUPABASE')).join(', ') || 'ninguna')
+  console.log('  Variables disponibles (primeras 20):', Object.keys(process.env).slice(0, 20).join(', '))
 }
 
 // Validación mejorada con mensaje más descriptivo
