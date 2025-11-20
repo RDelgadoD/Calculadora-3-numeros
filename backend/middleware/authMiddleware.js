@@ -7,16 +7,29 @@ import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 import { supabaseAdmin } from '../lib/supabase.js'
 
-// Cargar variables de entorno si no están disponibles
-if (!process.env.SUPABASE_URL) {
-  dotenv.config()
-}
+// Cargar variables de entorno (dotenv solo funciona en desarrollo local)
+// En Vercel, las variables están en process.env automáticamente
+dotenv.config()
 
-const supabaseUrl = process.env.SUPABASE_URL
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+// Obtener variables de entorno (trim para eliminar espacios)
+// Intentar primero SUPABASE_URL, luego VITE_SUPABASE_URL como fallback
+// (en Vercel, a veces las variables VITE_ están disponibles en el runtime)
+const supabaseUrl = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL)?.trim()
+const supabaseAnonKey = (process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)?.trim()
 
+// Validación mejorada con mensaje más descriptivo
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('SUPABASE_URL y SUPABASE_ANON_KEY deben estar configurados en el archivo .env')
+  const missing = []
+  if (!supabaseUrl) missing.push('SUPABASE_URL o VITE_SUPABASE_URL')
+  if (!supabaseAnonKey) missing.push('SUPABASE_ANON_KEY o VITE_SUPABASE_ANON_KEY o SUPABASE_SERVICE_ROLE_KEY')
+  
+  const availableVars = Object.keys(process.env).filter(k => k.includes('SUPABASE'))
+  const errorMsg = `Las siguientes variables de entorno no están configuradas: ${missing.join(', ')}. ` +
+    `En Vercel, asegúrate de agregarlas en Settings > Environment Variables para el entorno Production. ` +
+    `Variables disponibles: ${availableVars.join(', ') || 'ninguna'}`
+  
+  console.error('❌ Error de configuración en authMiddleware:', errorMsg)
+  throw new Error(errorMsg)
 }
 
 // Cliente para verificar tokens (usa anon key)

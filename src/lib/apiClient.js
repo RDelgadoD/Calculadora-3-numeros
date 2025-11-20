@@ -7,6 +7,14 @@ import { supabase } from './supabase'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'
 
+// Validar que en producción no esté usando localhost
+if (import.meta.env.PROD && API_BASE_URL.includes('localhost')) {
+  console.error('❌ ERROR: VITE_API_BASE_URL está configurada como localhost en producción.')
+  console.error('   Configura VITE_API_BASE_URL en Vercel Settings > Environment Variables')
+  console.error('   Valor actual:', API_BASE_URL)
+  console.error('   Debe ser: https://calculadora-3-numeros.vercel.app/api')
+}
+
 /**
  * Obtener token JWT de Supabase
  */
@@ -73,9 +81,21 @@ const apiRequest = async (endpoint, options = {}) => {
     // Si es un error de red
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       console.error(`[API] Error de red. URL intentada: ${API_BASE_URL}${endpoint}`)
+      
+      let errorMessage = `Error de conexión. No se pudo conectar a ${API_BASE_URL}.`
+      
+      // Si está usando localhost en producción, dar mensaje más específico
+      if (import.meta.env.PROD && API_BASE_URL.includes('localhost')) {
+        errorMessage = `Error de configuración: VITE_API_BASE_URL está configurada como "${API_BASE_URL}" (localhost). ` +
+          `En Vercel, ve a Settings > Environment Variables y configura VITE_API_BASE_URL con el valor: ` +
+          `https://calculadora-3-numeros.vercel.app/api. Después, haz un redeploy.`
+      } else {
+        errorMessage += ` Verifica que el servidor esté corriendo y que VITE_API_BASE_URL esté configurada correctamente.`
+      }
+      
       throw {
         code: 'NETWORK_ERROR',
-        message: `Error de conexión. No se pudo conectar a ${API_BASE_URL}. Verifica que el servidor esté corriendo y que VITE_API_BASE_URL esté configurada correctamente.`,
+        message: errorMessage,
         status: 0,
         url: `${API_BASE_URL}${endpoint}`
       }
