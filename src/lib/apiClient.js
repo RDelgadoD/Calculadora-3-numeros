@@ -24,8 +24,12 @@ const getAuthToken = async () => {
 const apiRequest = async (endpoint, options = {}) => {
   try {
     const token = await getAuthToken()
+    const url = `${API_BASE_URL}${endpoint}`
+    
+    console.log(`[API] Haciendo petición a: ${url}`)
+    console.log(`[API] API_BASE_URL configurada: ${API_BASE_URL}`)
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(url, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
@@ -34,9 +38,26 @@ const apiRequest = async (endpoint, options = {}) => {
       }
     })
 
-    const data = await response.json()
+    console.log(`[API] Respuesta recibida: ${response.status} ${response.statusText}`)
+
+    // Si la respuesta no es JSON, intentar leer como texto primero
+    const contentType = response.headers.get('content-type')
+    let data
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json()
+    } else {
+      const text = await response.text()
+      console.error(`[API] Respuesta no es JSON: ${text}`)
+      throw {
+        code: 'INVALID_RESPONSE',
+        message: `El servidor respondió con un formato inesperado: ${response.status} ${response.statusText}`,
+        status: response.status,
+        details: text.substring(0, 200)
+      }
+    }
 
     if (!response.ok) {
+      console.error(`[API] Error en la respuesta:`, data)
       throw {
         code: data.error?.code || 'API_ERROR',
         message: data.error?.message || 'Error en la petición',
@@ -47,15 +68,31 @@ const apiRequest = async (endpoint, options = {}) => {
 
     return data
   } catch (error) {
+    console.error(`[API] Error en la petición:`, error)
+    
     // Si es un error de red
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      console.error(`[API] Error de red. URL intentada: ${API_BASE_URL}${endpoint}`)
       throw {
         code: 'NETWORK_ERROR',
-        message: 'Error de conexión. Verifica que el servidor esté corriendo.',
-        status: 0
+        message: `Error de conexión. No se pudo conectar a ${API_BASE_URL}. Verifica que el servidor esté corriendo y que VITE_API_BASE_URL esté configurada correctamente.`,
+        status: 0,
+        url: `${API_BASE_URL}${endpoint}`
       }
     }
-    throw error
+    
+    // Si ya es un error formateado, lanzarlo tal cual
+    if (error.code) {
+      throw error
+    }
+    
+    // Error genérico
+    throw {
+      code: 'UNKNOWN_ERROR',
+      message: error.message || 'Error desconocido al realizar la petición',
+      status: 0,
+      originalError: error.toString()
+    }
   }
 }
 

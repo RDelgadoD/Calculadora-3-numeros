@@ -5,7 +5,8 @@
 
 import { supabaseAdmin } from '../lib/supabase.js'
 import { formatRecordsList } from '../utils/formatResponse.js'
-import { generateSQL } from '../services/openaiService.js'
+// Importación lazy de openaiService para evitar errores si OPENAI_API_KEY no está configurada
+// import { generateSQL } from '../services/openaiService.js'
 
 export class ChatController {
   /**
@@ -37,6 +38,9 @@ export class ChatController {
         })
       }
 
+      // Importación lazy de openaiService (solo cuando se necesita)
+      const { generateSQL } = await import('../services/openaiService.js')
+      
       // Generar SQL usando OpenAI con contexto
       const { sql, explanation } = await generateSQL(question.trim(), clienteId, conversationContext || '')
 
