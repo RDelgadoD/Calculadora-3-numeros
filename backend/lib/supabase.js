@@ -11,18 +11,33 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 // Obtener variables de entorno (trim para eliminar espacios)
-const supabaseUrl = process.env.SUPABASE_URL?.trim()
+// Intentar primero SUPABASE_URL, luego VITE_SUPABASE_URL como fallback
+// (en Vercel, a veces las variables VITE_ están disponibles en el runtime)
+const supabaseUrl = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL)?.trim()
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+const supabaseAnonKey = (process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY)?.trim()
+
+// Log de diagnóstico (solo en desarrollo o cuando hay error)
+if (process.env.NODE_ENV === 'development' || !supabaseUrl || !supabaseServiceKey) {
+  console.log('🔍 Diagnóstico de variables de entorno:')
+  console.log('  SUPABASE_URL:', process.env.SUPABASE_URL ? '✅' : '❌')
+  console.log('  VITE_SUPABASE_URL:', process.env.VITE_SUPABASE_URL ? '✅' : '❌')
+  console.log('  SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅' : '❌')
+  console.log('  SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? '✅' : '❌')
+  console.log('  VITE_SUPABASE_ANON_KEY:', process.env.VITE_SUPABASE_ANON_KEY ? '✅' : '❌')
+  console.log('  Todas las variables SUPABASE:', Object.keys(process.env).filter(k => k.includes('SUPABASE')).join(', ') || 'ninguna')
+}
 
 // Validación mejorada con mensaje más descriptivo
 if (!supabaseUrl || !supabaseServiceKey) {
   const missing = []
-  if (!supabaseUrl) missing.push('SUPABASE_URL')
+  if (!supabaseUrl) missing.push('SUPABASE_URL o VITE_SUPABASE_URL')
   if (!supabaseServiceKey) missing.push('SUPABASE_SERVICE_ROLE_KEY')
   
+  const availableVars = Object.keys(process.env).filter(k => k.includes('SUPABASE'))
   const errorMsg = `Las siguientes variables de entorno no están configuradas: ${missing.join(', ')}. ` +
-    `En Vercel, asegúrate de agregarlas en Settings > Environment Variables. ` +
-    `Variables disponibles: ${Object.keys(process.env).filter(k => k.includes('SUPABASE')).join(', ') || 'ninguna'}`
+    `En Vercel, asegúrate de agregarlas en Settings > Environment Variables para el entorno Production. ` +
+    `Variables disponibles: ${availableVars.join(', ') || 'ninguna'}`
   
   console.error('❌ Error de configuración:', errorMsg)
   throw new Error(errorMsg)
@@ -39,7 +54,7 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
 // Cliente con anon key (para validaciones que respetan RLS)
 export const supabaseClient = createClient(
   supabaseUrl, 
-  process.env.SUPABASE_ANON_KEY || supabaseServiceKey
+  supabaseAnonKey || supabaseServiceKey
 )
 
 
