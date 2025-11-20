@@ -189,6 +189,29 @@ Si hay errores:
 
 **Solución**: Verifica que el archivo `api/index.js` existe y exporta correctamente el app de Express.
 
+### Error: "Error de conexión. Verifica que el servidor esté corriendo."
+
+**Solución**: Este error indica que el frontend no puede conectarse al backend. Sigue estos pasos:
+
+1. **Verifica `VITE_API_BASE_URL`**:
+   - Si tu proyecto está en `https://tu-proyecto.vercel.app`
+   - Entonces `VITE_API_BASE_URL` debe ser: `https://tu-proyecto.vercel.app/api`
+   - O simplemente: `/api` (ruta relativa, funciona si frontend y backend están en el mismo dominio)
+
+2. **Verifica que la función serverless esté funcionando**:
+   - Visita: `https://tu-proyecto.vercel.app/api/health`
+   - Deberías ver: `{"status":"ok","timestamp":"...","version":"1.0.0"}`
+   - Si no funciona, revisa los logs en Vercel → Deployments → Function Logs
+
+3. **Verifica las variables de entorno del backend**:
+   - Asegúrate de que todas las variables estén configuradas en Vercel
+   - Especialmente: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`
+
+4. **Haz un redeploy después de cambiar variables**:
+   - Las variables `VITE_*` se inyectan en tiempo de build
+   - Si cambias `VITE_API_BASE_URL`, debes hacer un nuevo deploy
+   - Ve a Deployments → Último deployment → Menú "..." → "Redeploy"
+
 ---
 
 ## 📝 Resumen de Variables de Entorno Necesarias
