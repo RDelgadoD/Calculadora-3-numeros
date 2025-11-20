@@ -46,12 +46,33 @@ if (process.env.VERCEL && process.env.VERCEL_URL) {
 app.use(cors({
   origin: function (origin, callback) {
     // Permitir requests sin origen (mobile apps, curl, etc.)
-    if (!origin) return callback(null, true)
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.VERCEL) {
-      callback(null, true)
-    } else {
-      callback(new Error('No permitido por CORS'))
+    if (!origin) {
+      console.log('[CORS] Request sin origen, permitiendo')
+      return callback(null, true)
     }
+    
+    // En Vercel, permitir cualquier origen de Vercel
+    if (process.env.VERCEL) {
+      // Permitir cualquier subdominio de vercel.app
+      if (origin.includes('.vercel.app') || origin.includes('vercel.app')) {
+        console.log('[CORS] Origen de Vercel permitido:', origin)
+        return callback(null, true)
+      }
+    }
+    
+    // Verificar si está en la lista de orígenes permitidos
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log('[CORS] Origen permitido:', origin)
+      return callback(null, true)
+    }
+    
+    // Log para diagnóstico
+    console.warn('[CORS] Origen no permitido:', origin)
+    console.warn('[CORS] Orígenes permitidos:', allowedOrigins)
+    console.warn('[CORS] VERCEL_URL:', process.env.VERCEL_URL)
+    console.warn('[CORS] VERCEL:', process.env.VERCEL)
+    
+    callback(new Error('No permitido por CORS'))
   },
   credentials: true
 }))

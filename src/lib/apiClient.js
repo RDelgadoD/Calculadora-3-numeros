@@ -5,14 +5,44 @@
 
 import { supabase } from './supabase'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'
+// Obtener la URL base de la API
+const envApiUrl = import.meta.env.VITE_API_BASE_URL
 
-// Validar que en producción no esté usando localhost
-if (import.meta.env.PROD && API_BASE_URL.includes('localhost')) {
-  console.error('❌ ERROR: VITE_API_BASE_URL está configurada como localhost en producción.')
-  console.error('   Configura VITE_API_BASE_URL en Vercel Settings > Environment Variables')
-  console.error('   Valor actual:', API_BASE_URL)
-  console.error('   Debe ser: https://calculadora-3-numeros.vercel.app/api')
+// Si estamos en producción y no hay variable configurada, intentar usar la URL actual
+let API_BASE_URL = envApiUrl
+if (!API_BASE_URL) {
+  if (import.meta.env.PROD && typeof window !== 'undefined') {
+    // En producción, usar la URL actual del navegador + /api
+    API_BASE_URL = `${window.location.origin}/api`
+    console.warn('[API Client] ⚠️ VITE_API_BASE_URL no está configurada. Usando URL actual del navegador:', API_BASE_URL)
+  } else {
+    // En desarrollo, usar localhost
+    API_BASE_URL = 'http://localhost:3001/api'
+  }
+}
+
+// Logging detallado para diagnóstico
+console.log('[API Client] Inicializando...')
+console.log('[API Client] import.meta.env.VITE_API_BASE_URL:', envApiUrl || '(no definida)')
+console.log('[API Client] API_BASE_URL final:', API_BASE_URL)
+console.log('[API Client] import.meta.env.PROD:', import.meta.env.PROD)
+console.log('[API Client] import.meta.env.MODE:', import.meta.env.MODE)
+console.log('[API Client] window.location.origin:', typeof window !== 'undefined' ? window.location.origin : 'N/A')
+
+// Validar que en producción no esté usando localhost (solo si no usamos la URL del navegador como fallback)
+if (import.meta.env.PROD && API_BASE_URL.includes('localhost') && envApiUrl) {
+  console.error('❌ ERROR CRÍTICO: VITE_API_BASE_URL está configurada como localhost en producción.')
+  console.error('   Valor de import.meta.env.VITE_API_BASE_URL:', envApiUrl)
+  console.error('   API_BASE_URL final:', API_BASE_URL)
+  console.error('   SOLUCIÓN:')
+  console.error('   1. Ve a Vercel Settings > Environment Variables')
+  console.error('   2. Edita VITE_API_BASE_URL y cámbiala a: https://calculadora-3-numeros.vercel.app/api')
+  console.error('   3. Asegúrate de que esté en Production, Preview y Development')
+  console.error('   4. Haz un NUEVO DEPLOY (las variables VITE_* se inyectan en tiempo de build)')
+} else if (import.meta.env.PROD && !envApiUrl) {
+  console.warn('⚠️ ADVERTENCIA: VITE_API_BASE_URL no está configurada en Vercel.')
+  console.warn('   Usando URL actual del navegador como fallback:', API_BASE_URL)
+  console.warn('   RECOMENDACIÓN: Configura VITE_API_BASE_URL en Vercel para mejor rendimiento.')
 }
 
 /**
