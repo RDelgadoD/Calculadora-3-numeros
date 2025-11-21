@@ -6,30 +6,36 @@
 
 .contract-list-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
 .contract-list-header h2 {
   margin: 0;
   color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+.dark .contract-list-header h2 {
+  color: #f3f4f6;
 }
 
 .btn-create {
   background-color: #27ae60;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
+  padding: 6px 14px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
-  display: flex;
+  font-size: 13px;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   transition: background-color 0.3s;
   white-space: nowrap;
   height: auto;
+  width: fit-content;
 }
 
 .btn-create:hover {
@@ -37,7 +43,7 @@
 }
 
 .btn-create span {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: bold;
   line-height: 1;
 }
@@ -50,6 +56,11 @@
   margin-bottom: 20px;
 }
 
+.dark .contracts-table-wrapper {
+  background: #1f2937;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
 .contracts-table {
   width: 100%;
   border-collapse: collapse;
@@ -57,6 +68,10 @@
 
 .contracts-table thead {
   background-color: #f8f9fa;
+}
+
+.dark .contracts-table thead {
+  background-color: #374151;
 }
 
 .contracts-table th {
@@ -69,23 +84,46 @@
   user-select: none;
 }
 
+.dark .contracts-table th {
+  color: #f3f4f6;
+  border-bottom-color: #4b5563;
+}
+
 .contracts-table th:hover {
   background-color: #e9ecef;
+}
+
+.dark .contracts-table th:hover {
+  background-color: #4b5563;
 }
 
 .contracts-table td {
   padding: 12px;
   border-bottom: 1px solid #dee2e6;
+  color: #2c3e50;
+}
+
+.dark .contracts-table td {
+  color: #e5e7eb;
+  border-bottom-color: #4b5563;
 }
 
 .contracts-table tbody tr:hover {
   background-color: #f8f9fa;
 }
 
+.dark .contracts-table tbody tr:hover {
+  background-color: #374151;
+}
+
 .empty-message {
   text-align: center;
   color: #6c757d;
   padding: 40px !important;
+}
+
+.dark .empty-message {
+  color: #9ca3af;
 }
 
 .btn-edit,
@@ -97,6 +135,12 @@
   padding: 5px 10px;
   margin: 0 5px;
   transition: transform 0.2s;
+  color: #2c3e50;
+}
+
+.dark .btn-edit,
+.dark .btn-delete {
+  color: #e5e7eb;
 }
 
 .btn-edit:hover,
@@ -118,9 +162,19 @@
   color: #856404;
 }
 
+.dark .estado-proceso-de-firma {
+  background-color: #78350f;
+  color: #fbbf24;
+}
+
 .estado-firmado {
   background-color: #d1ecf1;
   color: #0c5460;
+}
+
+.dark .estado-firmado {
+  background-color: #164e63;
+  color: #67e8f9;
 }
 
 .estado-acta-de-inicio {
@@ -128,9 +182,19 @@
   color: #155724;
 }
 
+.dark .estado-acta-de-inicio {
+  background-color: #14532d;
+  color: #86efac;
+}
+
 .estado-en-ejecución {
   background-color: #cce5ff;
   color: #004085;
+}
+
+.dark .estado-en-ejecución {
+  background-color: #1e3a8a;
+  color: #93c5fd;
 }
 
 .estado-suspendido {
@@ -138,14 +202,29 @@
   color: #721c24;
 }
 
+.dark .estado-suspendido {
+  background-color: #7f1d1d;
+  color: #fca5a5;
+}
+
 .estado-terminado {
   background-color: #d1ecf1;
   color: #0c5460;
 }
 
+.dark .estado-terminado {
+  background-color: #164e63;
+  color: #67e8f9;
+}
+
 .estado-liquidado {
   background-color: #d4edda;
   color: #155724;
+}
+
+.dark .estado-liquidado {
+  background-color: #14532d;
+  color: #86efac;
 }
 
 .pagination {
@@ -180,10 +259,18 @@
   font-weight: 500;
 }
 
+.dark .pagination-info {
+  color: #e5e7eb;
+}
+
 .loading {
   text-align: center;
   padding: 40px;
   color: #6c757d;
+}
+
+.dark .loading {
+  color: #9ca3af;
 }
 
 .mensaje {
@@ -196,6 +283,12 @@
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
+}
+
+.dark .mensaje.error {
+  background-color: #7f1d1d;
+  color: #fca5a5;
+  border-color: #991b1b;
 }
 
 @media (max-width: 768px) {
@@ -224,4 +317,3 @@
     gap: 10px;
   }
 }
-

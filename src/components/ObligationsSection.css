@@ -15,6 +15,10 @@
   color: #333;
 }
 
+.dark .section-header h4 {
+  color: #f3f4f6;
+}
+
 .btn-add {
   background: #4CAF50;
   color: white;
@@ -42,6 +46,10 @@
   margin-bottom: 1rem;
 }
 
+.dark .obligation-form {
+  background: #374151;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -64,6 +72,10 @@
   color: #333;
 }
 
+.dark .form-group label {
+  color: #e5e7eb;
+}
+
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -73,6 +85,16 @@
   border-radius: 4px;
   font-size: 0.9rem;
   font-family: inherit;
+  background: white;
+  color: #333;
+}
+
+.dark .form-group input,
+.dark .form-group select,
+.dark .form-group textarea {
+  background: #4b5563;
+  border-color: #6b7280;
+  color: #e5e7eb;
 }
 
 .form-group textarea {
@@ -90,10 +112,18 @@
   font-style: italic;
 }
 
+.dark .empty-message {
+  color: #9ca3af;
+}
+
 .obligations-table {
   width: 100%;
   border-collapse: collapse;
   background: white;
+}
+
+.dark .obligations-table {
+  background: #1f2937;
 }
 
 .obligations-table th,
@@ -103,10 +133,24 @@
   border-bottom: 1px solid #eee;
 }
 
+.dark .obligations-table th,
+.dark .obligations-table td {
+  border-bottom-color: #4b5563;
+}
+
 .obligations-table th {
   background: #f5f5f5;
   font-weight: 600;
   color: #333;
+}
+
+.dark .obligations-table th {
+  background: #374151;
+  color: #f3f4f6;
+}
+
+.dark .obligations-table td {
+  color: #e5e7eb;
 }
 
 .descripcion-cell {
@@ -126,6 +170,11 @@
   font-weight: 500;
 }
 
+.dark .estado-badge {
+  background: #1e3a8a;
+  color: #93c5fd;
+}
+
 .btn-edit-small,
 .btn-delete-small {
   background: none;
@@ -134,6 +183,12 @@
   font-size: 1.2rem;
   padding: 0.25rem 0.5rem;
   margin-right: 0.5rem;
+  color: #333;
+}
+
+.dark .btn-edit-small,
+.dark .btn-delete-small {
+  color: #e5e7eb;
 }
 
 .btn-edit-small:hover,
@@ -150,4 +205,3 @@
     max-width: 150px;
   }
 }
-

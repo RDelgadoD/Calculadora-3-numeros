@@ -15,6 +15,10 @@
   color: #333;
 }
 
+.dark .section-header h4 {
+  color: #f3f4f6;
+}
+
 .btn-add {
   background: #4CAF50;
   color: white;
@@ -42,6 +46,10 @@
   margin-bottom: 1rem;
 }
 
+.dark .upload-form {
+  background: #374151;
+}
+
 .upload-form .form-group {
   margin-bottom: 1rem;
 }
@@ -53,11 +61,23 @@
   color: #333;
 }
 
+.dark .upload-form label {
+  color: #e5e7eb;
+}
+
 .upload-form input[type="file"] {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;
+  background: white;
+  color: #333;
+}
+
+.dark .upload-form input[type="file"] {
+  background: #4b5563;
+  border-color: #6b7280;
+  color: #e5e7eb;
 }
 
 .file-info {
@@ -65,6 +85,10 @@
   margin-top: 0.5rem;
   color: #666;
   font-size: 0.85rem;
+}
+
+.dark .file-info {
+  color: #9ca3af;
 }
 
 .form-actions-inline {
@@ -112,10 +136,18 @@
   font-style: italic;
 }
 
+.dark .empty-message {
+  color: #9ca3af;
+}
+
 .attachments-table {
   width: 100%;
   border-collapse: collapse;
   background: white;
+}
+
+.dark .attachments-table {
+  background: #1f2937;
 }
 
 .attachments-table th,
@@ -125,15 +157,33 @@
   border-bottom: 1px solid #eee;
 }
 
+.dark .attachments-table th,
+.dark .attachments-table td {
+  border-bottom-color: #4b5563;
+}
+
 .attachments-table th {
   background: #f5f5f5;
   font-weight: 600;
   color: #333;
 }
 
+.dark .attachments-table th {
+  background: #374151;
+  color: #f3f4f6;
+}
+
+.dark .attachments-table td {
+  color: #e5e7eb;
+}
+
 .file-link {
   color: #4CAF50;
   text-decoration: none;
+}
+
+.dark .file-link {
+  color: #4ade80;
 }
 
 .file-link:hover {
@@ -146,9 +196,13 @@
   cursor: pointer;
   font-size: 1.2rem;
   padding: 0.25rem 0.5rem;
+  color: #333;
+}
+
+.dark .btn-delete-small {
+  color: #e5e7eb;
 }
 
 .btn-delete-small:hover {
   opacity: 0.7;
 }
-

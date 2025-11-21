@@ -31,6 +31,9 @@ function GestionCliente({ userInfo }) {
 
   const loadInitialData = async () => {
     try {
+      setLoading(true)
+      setEstado({ tipo: null, mensaje: null })
+      
       const [clientsData, configsData] = await Promise.all([
         clientsService.list({ limit: 100 }),
         configService.getTiposIdentificacion()
@@ -40,7 +43,17 @@ function GestionCliente({ userInfo }) {
       setTiposIdentificacion(configsData.data || [])
     } catch (error) {
       console.error('Error al cargar datos:', error)
-      setEstado({ tipo: 'error', mensaje: 'Error al cargar datos' })
+      let mensajeError = 'Error al cargar datos'
+      
+      if (error.code === 'BACKEND_NOT_RUNNING' || error.code === 'NETWORK_ERROR') {
+        mensajeError = error.message || 'El servidor backend no está disponible. Por favor, inicia el backend ejecutando: cd backend && npm run dev'
+      } else if (error.message) {
+        mensajeError = error.message
+      }
+      
+      setEstado({ tipo: 'error', mensaje: mensajeError })
+      setClients([])
+      setTiposIdentificacion([])
     } finally {
       setLoading(false)
     }

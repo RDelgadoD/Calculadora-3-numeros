@@ -5,6 +5,11 @@
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
+.dark .cotizacion-container {
+  background: #1f2937;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
 .modal-card.modal-card-large {
   width: min(720px, 95%);
   max-height: 90vh;
@@ -23,10 +28,18 @@
   color: #111827;
 }
 
+.dark .cotizacion-header h2 {
+  color: #f3f4f6;
+}
+
 .cotizacion-subtitle {
   margin: 6px 0 0;
   font-size: 0.9rem;
   color: #6b7280;
+}
+
+.dark .cotizacion-subtitle {
+  color: #9ca3af;
 }
 
 .cotizacion-empty-state {
@@ -38,12 +51,22 @@
   border-radius: 10px;
 }
 
+.dark .cotizacion-empty-state {
+  background: #374151;
+  color: #9ca3af;
+}
+
 /* Acordeón reutilizado en cotizaciones y descuentos */
 .accordion-section {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   margin-top: 12px;
   background: #f9fafb;
+}
+
+.dark .accordion-section {
+  border-color: #4b5563;
+  background: #374151;
 }
 
 .accordion-header {
@@ -62,12 +85,21 @@
   color: #111827;
 }
 
+.dark .accordion-header h3 {
+  color: #f3f4f6;
+}
+
 .accordion-content {
   padding: 10px 12px 14px;
   border-top: 1px solid #e5e7eb;
   background: #ffffff;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
+}
+
+.dark .accordion-content {
+  border-top-color: #4b5563;
+  background: #1f2937;
 }
 
 /* Layout específico para gestión de descuentos de productos */
@@ -89,10 +121,19 @@
   padding: 14px 16px;
 }
 
+.dark .descuentos-layout .descuentos-form {
+  background: #374151;
+  border-color: #4b5563;
+}
+
 .descuentos-layout .descuentos-form h3 {
   margin: 0 0 8px;
   font-size: 1rem;
   color: #111827;
+}
+
+.dark .descuentos-layout .descuentos-form h3 {
+  color: #f3f4f6;
 }
 
 /* Modal ancho específico para configurar descuentos por producto */
@@ -100,6 +141,10 @@
   width: min(1120px, 98%);
   max-height: 90vh;
   overflow-y: auto;
+}
+
+.dark .modal-card-descuentos-producto {
+  background: #1f2937;
 }
 
 /* Formulario de descuentos - aparece debajo del botón y búsqueda */
@@ -112,10 +157,19 @@
   margin-bottom: 20px;
 }
 
+.dark .descuentos-form-container {
+  background: #374151;
+  border-color: #4b5563;
+}
+
 .descuentos-form-header {
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid #e5e7eb;
+}
+
+.dark .descuentos-form-header {
+  border-bottom-color: #4b5563;
 }
 
 .descuentos-form-header h3 {
@@ -123,6 +177,10 @@
   font-size: 1.2rem;
   color: #111827;
   font-weight: 600;
+}
+
+.dark .descuentos-form-header h3 {
+  color: #f3f4f6;
 }
 
 .descuentos-form-content {
@@ -153,6 +211,10 @@
   color: #374151;
 }
 
+.dark .descuentos-form-grid .form-group label {
+  color: #e5e7eb;
+}
+
 .descuentos-form-grid .form-group input,
 .descuentos-form-grid .form-group select,
 .descuentos-form-grid .form-group textarea {
@@ -162,6 +224,16 @@
   border-radius: 6px;
   font-size: 0.9rem;
   transition: border-color 0.2s;
+  background: white;
+  color: #111827;
+}
+
+.dark .descuentos-form-grid .form-group input,
+.dark .descuentos-form-grid .form-group select,
+.dark .descuentos-form-grid .form-group textarea {
+  background: #4b5563;
+  border-color: #6b7280;
+  color: #e5e7eb;
 }
 
 .descuentos-form-grid .form-group input:focus,
@@ -213,8 +285,19 @@
   border: 2px solid #d1d5db;
 }
 
+.dark .descuentos-form-actions .btn-secondary {
+  background: #4b5563;
+  color: #e5e7eb;
+  border-color: #6b7280;
+}
+
 .descuentos-form-actions .btn-secondary:hover {
   background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.dark .descuentos-form-actions .btn-secondary:hover {
+  background: #6b7280;
   border-color: #9ca3af;
 }
 

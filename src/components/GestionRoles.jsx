@@ -28,6 +28,7 @@ function GestionRoles({ userInfo }) {
   const cargarDatos = async () => {
     try {
       setLoading(true)
+      setEstado({ tipo: null, mensaje: null })
       
       // Sincronizar menú primero
       try {
@@ -50,7 +51,17 @@ function GestionRoles({ userInfo }) {
       setMenuItems(menuTree)
     } catch (error) {
       console.error('Error al cargar datos:', error)
-      setEstado({ tipo: 'error', mensaje: 'Error al cargar datos' })
+      let mensajeError = 'Error al cargar datos'
+      
+      if (error.code === 'BACKEND_NOT_RUNNING' || error.code === 'NETWORK_ERROR') {
+        mensajeError = error.message || 'El servidor backend no está disponible. Por favor, inicia el backend ejecutando: cd backend && npm run dev'
+      } else if (error.message) {
+        mensajeError = error.message
+      }
+      
+      setEstado({ tipo: 'error', mensaje: mensajeError })
+      setRoles([])
+      setMenuItems([])
     } finally {
       setLoading(false)
     }

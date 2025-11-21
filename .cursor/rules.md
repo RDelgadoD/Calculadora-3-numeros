@@ -215,10 +215,105 @@ fecha_terminacion: formData.fecha_terminacion?.trim() || null
 - **Colores**: Verde claro (#27ae60) como color principal
 - **Botones**: Tamaños proporcionados, padding adecuado (ej: `0.4rem 1rem`)
 
+### Formularios - Reglas Obligatorias
+**TODOS los formularios (existentes y futuros) DEBEN cumplir con los siguientes requisitos:**
+
+#### Mobile First
+- **Diseño responsive**: Usar Tailwind CSS con prefijos responsive (`sm:`, `md:`, `lg:`) o media queries
+- **Campos apilados en móvil**: En pantallas pequeñas, los campos deben apilarse verticalmente
+- **Botones full-width en móvil**: Los botones de acción deben ocupar el ancho completo en móviles
+- **Inputs adaptativos**: Los campos de entrada deben ajustarse al tamaño de pantalla
+- **Tablas responsive**: En móvil, convertir tablas a vistas de tarjetas o scroll horizontal
+
+#### Modo Oscuro y Claro
+- **Soporte dual obligatorio**: TODOS los formularios deben funcionar correctamente en modo claro y oscuro
+- **Clases dark mode**: Usar el prefijo `.dark` de Tailwind o clases CSS con selector `.dark`
+- **Elementos que DEBEN tener modo oscuro**:
+  - Contenedores de formularios (fondos: `#1f2937` en oscuro, `white` en claro)
+  - Campos de entrada (`input`, `select`, `textarea`): fondo `#374151` o `#4b5563` en oscuro
+  - Labels: color `#e5e7eb` en oscuro, `#2c3e50` en claro
+  - Bordes: `#4b5563` o `#6b7280` en oscuro, `#ced4da` en claro
+  - Botones: ajustar colores de fondo y texto para ambos modos
+  - Tablas: filas con fondo `#1f2937` en oscuro, texto `#e5e7eb`
+  - Modales: fondo `#1f2937` en oscuro
+  - Mensajes de error/éxito: colores adaptados para ambos modos
+  - Badges y etiquetas: colores contrastantes en ambos modos
+
+#### Estilos Consistentes
+- **Esquema de colores**:
+  - Primario: Teal profundo `#0D9488` (encabezados y acentos)
+  - Secundario: Gris suave `#6B7280` (texto y bordes)
+  - Fondo claro: `#F9FAFB`
+  - Fondo oscuro: `#1f2937` (contenedores), `#374151` (inputs)
+  - Éxito: Verde `#22C55E`
+  - Error: Rojo `#EF4444`
+- **Bordes redondeados**: Usar `border-radius` consistente (8px-12px para contenedores, 6px para inputs)
+- **Sombras sutiles**: Box-shadow suave para profundidad
+- **Transiciones**: Transiciones suaves (0.2s-0.3s) en hover y focus
+- **Espaciado**: Padding y margin consistentes (usar sistema de espaciado de Tailwind o valores fijos)
+
+#### Estructura de Formularios
+- **Grid responsive**: Usar CSS Grid con `grid-template-columns: repeat(auto-fit, minmax(250px, 1fr))` o Tailwind `grid-cols-1 md:grid-cols-2`
+- **Campos full-width**: Campos de texto largo deben usar `grid-column: 1 / -1` o `col-span-full`
+- **Agrupación visual**: Agrupar campos relacionados con contenedores o secciones
+- **Labels claros**: Labels descriptivos con asterisco (*) para campos requeridos
+- **Placeholders útiles**: Placeholders que guíen al usuario
+
+#### Validación Visual
+- **Estados de error**: Bordes rojos y mensajes de error claros
+- **Estados de éxito**: Feedback visual positivo cuando corresponda
+- **Estados disabled**: Opacidad reducida y cursor not-allowed
+- **Estados focus**: Bordes destacados con color primario y sombra sutil
+
+#### Ejemplo de Estructura CSS para Formularios
+```css
+/* Modo claro (default) */
+.form-container {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.form-group input {
+  background: white;
+  border: 1px solid #ced4da;
+  color: #2c3e50;
+}
+
+/* Modo oscuro */
+.dark .form-container {
+  background: #1f2937;
+  border-color: #4b5563;
+}
+
+.dark .form-group input {
+  background: #374151;
+  border-color: #6b7280;
+  color: #e5e7eb;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .btn-submit {
+    width: 100%;
+  }
+}
+```
+
 ### Componentes Modales
 - **Overlay**: Prevenir cierre accidental con `onClick` y `onMouseDown`
 - **Stop propagation**: Usar `e.stopPropagation()` en formularios anidados
 - **Eventos**: Manejar `onClick`, `onMouseDown`, `onKeyDown` según necesidad
+- **Modo oscuro**: Aplicar estilos de modo oscuro a overlays y modales
 
 ## IDIOMA Y MENSAJES
 
@@ -365,4 +460,5 @@ CORS_ORIGIN=http://localhost:5173
 - **SIEMPRE** usar español para mensajes y labels
 - **SIEMPRE** prevenir propagación de eventos en formularios anidados
 - **SIEMPRE** usar `supabaseAdmin` en backend para bypass RLS cuando sea necesario
+- **SIEMPRE** aplicar diseño mobile-first y soporte de modo oscuro/claro a TODOS los formularios
 

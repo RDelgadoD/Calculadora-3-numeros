@@ -13,6 +13,10 @@
   overflow-y: auto;
 }
 
+.dark .contract-form-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
 .contract-form-modal {
   background: white;
   border-radius: 8px;
@@ -24,6 +28,11 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.dark .contract-form-modal {
+  background: #1f2937;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
 .contract-form-header {
   display: flex;
   justify-content: space-between;
@@ -32,9 +41,17 @@
   border-bottom: 1px solid #dee2e6;
 }
 
+.dark .contract-form-header {
+  border-bottom-color: #4b5563;
+}
+
 .contract-form-header h2 {
   margin: 0;
   color: #2c3e50;
+}
+
+.dark .contract-form-header h2 {
+  color: #f3f4f6;
 }
 
 .btn-close {
@@ -53,8 +70,16 @@
   transition: color 0.3s;
 }
 
+.dark .btn-close {
+  color: #9ca3af;
+}
+
 .btn-close:hover {
   color: #2c3e50;
+}
+
+.dark .btn-close:hover {
+  color: #e5e7eb;
 }
 
 .contract-form {
@@ -70,6 +95,10 @@
   overflow: hidden;
 }
 
+.dark .accordion-section {
+  border-color: #4b5563;
+}
+
 .accordion-header {
   display: flex;
   justify-content: space-between;
@@ -81,8 +110,16 @@
   transition: background-color 0.3s;
 }
 
+.dark .accordion-header {
+  background-color: #374151;
+}
+
 .accordion-header:hover {
   background-color: #e9ecef;
+}
+
+.dark .accordion-header:hover {
+  background-color: #4b5563;
 }
 
 .accordion-header h3 {
@@ -91,15 +128,27 @@
   font-size: 16px;
 }
 
+.dark .accordion-header h3 {
+  color: #f3f4f6;
+}
+
 .accordion-header span {
   font-size: 20px;
   font-weight: bold;
   color: #27ae60;
 }
 
+.dark .accordion-header span {
+  color: #4ade80;
+}
+
 .accordion-content {
   padding: 20px;
   background-color: white;
+}
+
+.dark .accordion-content {
+  background-color: #1f2937;
 }
 
 .form-grid {
@@ -120,6 +169,10 @@
   font-size: 14px;
 }
 
+.dark .form-group label {
+  color: #e5e7eb;
+}
+
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -129,6 +182,16 @@
   font-size: 14px;
   font-family: inherit;
   transition: border-color 0.3s;
+  background: white;
+  color: #2c3e50;
+}
+
+.dark .form-group input,
+.dark .form-group select,
+.dark .form-group textarea {
+  background: #374151;
+  border-color: #4b5563;
+  color: #e5e7eb;
 }
 
 .form-group input:focus,
@@ -136,6 +199,12 @@
 .form-group textarea:focus {
   outline: none;
   border-color: #27ae60;
+}
+
+.dark .form-group input:focus,
+.dark .form-group select:focus,
+.dark .form-group textarea:focus {
+  border-color: #4ade80;
 }
 
 .form-group textarea {
@@ -154,6 +223,10 @@
   margin-top: 30px;
   padding-top: 20px;
   border-top: 1px solid #dee2e6;
+}
+
+.dark .form-actions {
+  border-top-color: #4b5563;
 }
 
 .btn-cancel {
@@ -198,6 +271,10 @@
   padding: 20px;
 }
 
+.dark .info-text {
+  color: #9ca3af;
+}
+
 .mensaje {
   padding: 12px;
   border-radius: 5px;
@@ -210,10 +287,20 @@
   border: 1px solid #f5c6cb;
 }
 
+.dark .mensaje.error {
+  background-color: #7f1d1d;
+  color: #fca5a5;
+  border-color: #991b1b;
+}
+
 .loading {
   text-align: center;
   padding: 40px;
   color: #6c757d;
+}
+
+.dark .loading {
+  color: #9ca3af;
 }
 
 @media (max-width: 768px) {
@@ -238,4 +325,3 @@
     width: 100%;
   }
 }
-

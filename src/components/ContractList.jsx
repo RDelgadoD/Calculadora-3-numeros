@@ -61,8 +61,15 @@ function ContractList({ userInfo, loadingUserInfo = false }) {
         return // Esperar a que userInfo se cargue
       }
       
-      const errorMessage = err?.message || err?.code || 'Error al cargar los contratos'
+      let errorMessage = err?.message || err?.code || 'Error al cargar los contratos'
+      
+      // Mensajes más específicos para errores comunes
+      if (err?.code === 'BACKEND_NOT_RUNNING' || err?.code === 'NETWORK_ERROR') {
+        errorMessage = err.message || 'El servidor backend no está disponible. Por favor, inicia el backend ejecutando: cd backend && npm run dev'
+      }
+      
       setError(errorMessage)
+      setContracts([])
     } finally {
       setLoading(false)
     }
