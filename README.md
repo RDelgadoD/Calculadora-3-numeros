@@ -29,12 +29,10 @@ npm install
 2. **Configura Supabase:**
    - Crea una cuenta en [Supabase](https://app.supabase.com) si no tienes una
    - Crea un nuevo proyecto
-   - Ve a **SQL Editor** en el panel lateral
-   - Copia y pega el contenido del archivo `supabase-setup.sql`
-   - Ejecuta el script para crear la tabla `calculos`
    - Ve a **Settings > API** y copia:
      - La **URL del proyecto**
      - La **anon/public key**
+   - Configura las tablas necesarias usando los scripts SQL disponibles en el proyecto (consulta `create-tables-financieras.sql` y otros scripts SQL según necesites)
 
 3. **Configura las variables de entorno:**
    - Crea un archivo `.env` en la raíz del proyecto

@@ -1,0 +1,42 @@
+-- Script para corregir la foreign key de la tabla bancos
+-- El error indica que la FK apunta a "clients" pero la tabla real es "clientes"
+-- Ejecuta este script en el SQL Editor de Supabase
+
+-- 1. Eliminar la foreign key constraint incorrecta
+ALTER TABLE bancos 
+DROP CONSTRAINT IF EXISTS bancos_cliente_id_fkey;
+
+-- 2. Eliminar también la de ingresos si existe
+ALTER TABLE ingresos 
+DROP CONSTRAINT IF EXISTS ingresos_cliente_id_fkey;
+
+-- 3. Crear la foreign key correcta apuntando a "clientes"
+ALTER TABLE bancos
+ADD CONSTRAINT bancos_cliente_id_fkey 
+FOREIGN KEY (cliente_id) 
+REFERENCES clientes(id) 
+ON DELETE CASCADE;
+
+-- 4. Crear la foreign key correcta para ingresos también
+ALTER TABLE ingresos
+ADD CONSTRAINT ingresos_cliente_id_fkey 
+FOREIGN KEY (cliente_id) 
+REFERENCES clientes(id) 
+ON DELETE CASCADE;
+
+-- 5. Verificar que las foreign keys estén correctas
+SELECT 
+    tc.table_name, 
+    kcu.column_name, 
+    ccu.table_name AS foreign_table_name,
+    ccu.column_name AS foreign_column_name 
+FROM 
+    information_schema.table_constraints AS tc 
+    JOIN information_schema.key_column_usage AS kcu
+      ON tc.constraint_name = kcu.constraint_name
+    JOIN information_schema.constraint_column_usage AS ccu
+      ON ccu.constraint_name = tc.constraint_name
+WHERE tc.constraint_type = 'FOREIGN KEY' 
+  AND tc.table_name IN ('bancos', 'ingresos')
+  AND kcu.column_name = 'cliente_id';
+

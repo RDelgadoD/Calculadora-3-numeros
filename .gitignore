@@ -27,3 +27,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Cursor MCP configuration (contains sensitive keys)
+.cursor/mcp.json
