@@ -14,6 +14,9 @@ import clientRoutes from './routes/clientRoutes.js'
 import configRoutes from './routes/configRoutes.js'
 import chatRoutes from './routes/chatRoutes.js'
 import roleRoutes from './routes/roleRoutes.js'
+import bancoRoutes from './routes/bancoRoutes.js'
+import conceptoIngresoRoutes from './routes/conceptoIngresoRoutes.js'
+import ingresoRoutes from './routes/ingresoRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { authMiddleware } from './middleware/authMiddleware.js'
 
@@ -94,6 +97,9 @@ app.use('/api/clients', authMiddleware, clientRoutes)
 app.use('/api/config', authMiddleware, configRoutes)
 app.use('/api/chat', authMiddleware, chatRoutes)
 app.use('/api/roles', roleRoutes)
+app.use('/api/bancos', authMiddleware, bancoRoutes)
+app.use('/api/conceptos-ingreso', authMiddleware, conceptoIngresoRoutes)
+app.use('/api/ingresos', authMiddleware, ingresoRoutes)
 
 // Manejo de errores global
 app.use(errorHandler)

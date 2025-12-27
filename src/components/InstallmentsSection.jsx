@@ -19,15 +19,31 @@ function InstallmentsSection({ contractId, valorContrato, installments, onUpdate
   })
   const [error, setError] = useState(null)
 
-  const loadEstadosPagos = async () => {
+  const loadEstadosPagos = async (preserveCurrentState = false) => {
     try {
       const response = await configService.getEstadosPagos()
-      setEstadosPagos(response.data || [])
-      if (response.data && response.data.length > 0 && !formData.estado_pago_id) {
-        setFormData(prev => ({ ...prev, estado_pago_id: response.data[0].id }))
+      const estados = response.data || []
+      setEstadosPagos(estados)
+      
+      // Buscar el estado "Registrado" por defecto
+      const estadoRegistrado = estados.find(e => 
+        e.name?.toLowerCase() === 'registrado' || 
+        e.nombre?.toLowerCase() === 'registrado'
+      )
+      
+      // Solo establecer estado por defecto si no se está preservando el estado actual
+      // y si no hay un estado ya seleccionado
+      if (!preserveCurrentState && estados.length > 0 && !formData.estado_pago_id) {
+        const estadoDefault = estadoRegistrado?.id || estados[0]?.id
+        if (estadoDefault) {
+          setFormData(prev => ({ ...prev, estado_pago_id: estadoDefault }))
+        }
       }
+      
+      return { estados, estadoRegistrado }
     } catch (error) {
       console.error('Error al cargar estados de pago:', error)
+      return { estados: [], estadoRegistrado: null }
     }
   }
 
@@ -42,24 +58,56 @@ function InstallmentsSection({ contractId, valorContrato, installments, onUpdate
     return sumaActual - valorEditando + parseFloat(nuevoValor || 0)
   }
 
-  const handleOpenForm = (installment = null) => {
-    if (!showForm) {
-      loadEstadosPagos()
+  const handleOpenForm = async (installment = null) => {
+    // Cargar estados primero si no están cargados
+    let estados = estadosPagos
+    let estadoRegistrado = null
+    
+    if (estados.length === 0) {
+      const result = await loadEstadosPagos(!!installment) // Preservar estado si se está editando
+      estados = result.estados || []
+      estadoRegistrado = result.estadoRegistrado
+    } else {
+      // Si ya están cargados, buscar "Registrado"
+      estadoRegistrado = estados.find(e => 
+        e.name?.toLowerCase() === 'registrado' || 
+        e.nombre?.toLowerCase() === 'registrado'
+      )
     }
+    
     setEditingInstallment(installment)
     if (installment) {
+      // Al editar, usar el estado_pago_id del installment (que viene de la base de datos)
+      // Asegurarse de usar el ID correcto, no el nombre
+      const estadoId = installment.estado_pago_id || installment.estados_pagos?.id || ''
+      
+      // Formatear fecha para el input de tipo date (YYYY-MM-DD)
+      let fechaFormateada = ''
+      if (installment.fecha_cobro) {
+        try {
+          const fecha = new Date(installment.fecha_cobro)
+          if (!isNaN(fecha.getTime())) {
+            fechaFormateada = fecha.toISOString().split('T')[0]
+          }
+        } catch (e) {
+          console.error('Error al formatear fecha:', e)
+        }
+      }
+      
       setFormData({
         nombre_pago: installment.nombre_pago || '',
         valor: installment.valor || '',
-        fecha_cobro: installment.fecha_cobro || '',
-        estado_pago_id: installment.estado_pago_id || ''
+        fecha_cobro: fechaFormateada,
+        estado_pago_id: estadoId || (estados[0]?.id || '')
       })
     } else {
+      // Al crear nuevo, usar "Registrado" como estado por defecto
+      const estadoDefault = estadoRegistrado?.id || estados[0]?.id || ''
       setFormData({
         nombre_pago: '',
         valor: '',
         fecha_cobro: '',
-        estado_pago_id: estadosPagos[0]?.id || ''
+        estado_pago_id: estadoDefault
       })
     }
     setShowForm(true)
@@ -92,10 +140,16 @@ function InstallmentsSection({ contractId, valorContrato, installments, onUpdate
     }
 
     try {
+      // Preparar datos: convertir fecha vacía a null
+      const dataToSend = {
+        ...formData,
+        fecha_cobro: formData.fecha_cobro?.trim() || null
+      }
+
       if (editingInstallment) {
-        await contractsService.updateInstallment(contractId, editingInstallment.id, formData)
+        await contractsService.updateInstallment(contractId, editingInstallment.id, dataToSend)
       } else {
-        await contractsService.createInstallment(contractId, formData)
+        await contractsService.createInstallment(contractId, dataToSend)
       }
       handleCloseForm()
       // Recargar después de cerrar el formulario pequeño para evitar que se cierre el grande
@@ -185,13 +239,12 @@ function InstallmentsSection({ contractId, valorContrato, installments, onUpdate
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="fecha_cobro">Fecha de Cobro *</label>
+              <label htmlFor="fecha_cobro">Fecha de Cobro</label>
               <input
                 id="fecha_cobro"
                 type="date"
                 value={formData.fecha_cobro}
                 onChange={(e) => setFormData(prev => ({ ...prev, fecha_cobro: e.target.value }))}
-                required
               />
             </div>
 
@@ -258,7 +311,7 @@ function InstallmentsSection({ contractId, valorContrato, installments, onUpdate
                 <tr key={installment.id}>
                   <td>{installment.nombre_pago}</td>
                   <td>{parseFloat(installment.valor || 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}</td>
-                  <td>{new Date(installment.fecha_cobro).toLocaleDateString('es-ES')}</td>
+                  <td>{installment.fecha_cobro ? new Date(installment.fecha_cobro).toLocaleDateString('es-ES') : '-'}</td>
                   <td>
                     <span className="estado-badge">
                       {installment.estados_pagos?.name || '-'}

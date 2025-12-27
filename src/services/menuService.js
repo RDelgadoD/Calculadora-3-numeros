@@ -78,6 +78,36 @@ export const MENU_STRUCTURE = [
     icon: '👥',
     view_key: 'clientes',
     orden: 5
+  },
+  {
+    code: 'gestion-financiera',
+    label: 'Gestión Financiera',
+    icon: '💰',
+    view_key: 'gestion-financiera',
+    orden: 6,
+    children: [
+      {
+        code: 'gestion-financiera-bancos',
+        label: 'Bancos',
+        icon: '🏦',
+        view_key: 'bancos',
+        orden: 1
+      },
+      {
+        code: 'gestion-financiera-conceptos',
+        label: 'Conceptos de ingreso',
+        icon: '📝',
+        view_key: 'conceptos-ingreso',
+        orden: 2
+      },
+      {
+        code: 'gestion-financiera-ingresos',
+        label: 'Ingresos',
+        icon: '💵',
+        view_key: 'ingresos',
+        orden: 3
+      }
+    ]
   }
 ]
 

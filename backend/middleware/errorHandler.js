@@ -32,12 +32,23 @@ export const errorHandler = (err, req, res, next) => {
     }
 
     if (err.code === '23503') {
+      // Extraer información del error de clave foránea
+      const detail = err.detail || err.message || ''
+      let mensaje = 'Referencia inválida'
+      
+      // Mejorar mensaje según el tipo de referencia
+      if (detail.includes('cliente_id') || detail.includes('cliente')) {
+        mensaje = 'El cliente/entidad asociado no existe o no es válido. Verifica la configuración del usuario.'
+      } else if (detail.includes('foreign key')) {
+        mensaje = `Error de referencia: ${detail}`
+      }
+      
       return res.status(400).json({
         success: false,
         error: {
           code: 'FOREIGN_KEY_VIOLATION',
-          message: 'Referencia inválida',
-          details: err.detail || null
+          message: mensaje,
+          details: detail
         }
       })
     }

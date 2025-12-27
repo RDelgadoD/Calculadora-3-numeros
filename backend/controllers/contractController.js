@@ -442,16 +442,6 @@ export class ContractController {
         })
       }
 
-      if (!installmentData.fecha_cobro) {
-        return res.status(400).json({
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'La fecha de cobro es obligatoria'
-          }
-        })
-      }
-
       // Verificar que el contrato existe
       const contract = await ContractModel.findById(contractId, clienteId)
       if (!contract) {
@@ -480,9 +470,12 @@ export class ContractController {
         })
       }
 
+      // Preparar datos: convertir fecha vacía a null
       const newInstallment = {
         ...installmentData,
-        contract_id: contractId
+        contract_id: contractId,
+        // Convertir fecha_cobro vacía a null (opcional)
+        fecha_cobro: installmentData.fecha_cobro?.trim() || null
       }
 
       const installment = await InstallmentModel.create(newInstallment)
@@ -549,7 +542,16 @@ export class ContractController {
         }
       }
 
-      const updatedInstallment = await InstallmentModel.update(installmentId, installmentData)
+      // Preparar datos: convertir fecha vacía a null
+      const updateData = {
+        ...installmentData,
+        // Convertir fecha_cobro vacía a null si se está actualizando (opcional)
+        fecha_cobro: installmentData.fecha_cobro !== undefined 
+          ? (installmentData.fecha_cobro?.trim() || null)
+          : undefined
+      }
+
+      const updatedInstallment = await InstallmentModel.update(installmentId, updateData)
 
       res.json({
         success: true,

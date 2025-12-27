@@ -10,6 +10,9 @@ import GestionCliente from './GestionCliente'
 import GestionRoles from './GestionRoles'
 import CotizacionList from './CotizacionList'
 import ProductosServiciosGestion from './ProductosServiciosGestion'
+import GestionBancos from './GestionBancos'
+import GestionConceptosIngreso from './GestionConceptosIngreso'
+import GestionIngresos from './GestionIngresos'
 
 // Iconos SVG como componentes
 const MenuIcon = ({ className = "w-5 h-5" }) => (
@@ -56,17 +59,39 @@ const getMenuIcon = (icon) => {
 }
 
 function Dashboard({ user, onLogout }) {
+  // Logs visibles que no se pueden filtrar
+  console.error('========================================')
+  console.error('🚀 DASHBOARD INICIADO')
+  console.error('========================================')
+  console.error('🚀 Dashboard component rendered - user:', user?.id)
+  console.error('🚀 MENU_STRUCTURE length:', MENU_STRUCTURE?.length)
+  const gestionFinanciera = MENU_STRUCTURE.find(m => m.code === 'gestion-financiera')
+  console.error('🚀 Gestión Financiera encontrada:', gestionFinanciera ? '✅ SÍ' : '❌ NO')
+  if (gestionFinanciera) {
+    console.error('🚀 Detalles Gestión Financiera:', JSON.stringify({
+      code: gestionFinanciera.code,
+      label: gestionFinanciera.label,
+      orden: gestionFinanciera.orden,
+      children: gestionFinanciera.children?.length || 0
+    }, null, 2))
+  }
+  console.error('🚀 Todos los menús:', MENU_STRUCTURE.map(m => `${m.label} (${m.code}, orden: ${m.orden})`).join('\n   '))
+  console.error('========================================')
+  
   const [activeView, setActiveView] = useState(null)
   const [activeSubmenu, setActiveSubmenu] = useState(null)
   const [expandedMenu, setExpandedMenu] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false) // Para móvil
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false) // Para desktop
-  const [availableMenuItems, setAvailableMenuItems] = useState([])
   const [darkMode, setDarkMode] = useState(false)
   const menuRef = useRef(null)
   const sidebarRef = useRef(null)
   const { userInfo, loading: loadingUserInfo, permissions } = useUserInfo(user?.id)
+  
+  console.error('🚀 userInfo loaded:', userInfo)
+  console.error('🚀 loadingUserInfo:', loadingUserInfo)
+  console.error('🚀 permissions:', permissions)
 
   // Toggle modo oscuro
   useEffect(() => {
@@ -76,6 +101,13 @@ function Dashboard({ user, onLogout }) {
       document.documentElement.classList.remove('dark')
     }
   }, [darkMode])
+
+  // Debug: Forzar ejecución y mostrar información
+  useEffect(() => {
+    console.error('🔍 useEffect ejecutado - userInfo:', userInfo)
+    console.error('🔍 useEffect ejecutado - MENU_STRUCTURE:', MENU_STRUCTURE.length)
+    console.error('🔍 useEffect ejecutado - MENU_STRUCTURE items:', MENU_STRUCTURE.map(m => m.code).join(', '))
+  }, [userInfo, loadingUserInfo])
 
   // Cerrar menús al hacer click fuera
   useEffect(() => {
@@ -94,50 +126,44 @@ function Dashboard({ user, onLogout }) {
     }
   }, [])
 
-  // Cargar items de menú disponibles
-  useEffect(() => {
-    const loadMenuItems = async () => {
-      if (userInfo?.rol === 'admin') {
-        setAvailableMenuItems(MENU_STRUCTURE)
-        return
-      }
-      setAvailableMenuItems(MENU_STRUCTURE)
-    }
-
-    if (userInfo) {
-      loadMenuItems()
-    }
-  }, [userInfo])
-
-  // Filtrar menú según permisos del usuario
+  // FORZAR: Mostrar SIEMPRE TODOS los menús ordenados
+  // Esto garantiza que el menú "Gestión Financiera" siempre aparezca
   const visibleMenuItems = useMemo(() => {
-    if (userInfo?.rol === 'admin') {
-      return MENU_STRUCTURE
-    }
-
-    if (!userInfo?.roleId) {
-      return []
-    }
-
-    if (!permissions || permissions.length === 0) {
-      return []
-    }
-
-    const normalizedPermissions = permissions.map(p => {
-      if (p.code) return p
-      if (p.menu_items) return p.menu_items
-      return p
-    }).filter(p => p && p.code)
-
-    const allowedCodes = new Set(normalizedPermissions.map(p => p.code))
-    
-    return availableMenuItems.filter(item => {
-      if (item.adminOnly && userInfo.rol !== 'admin') {
-        return false
+    try {
+      console.error('🔄 ===== CALCULANDO VISIBLE MENU ITEMS =====')
+      console.error('🔄 MENU_STRUCTURE length:', MENU_STRUCTURE?.length)
+      
+      // FORZAR: Siempre mostrar TODOS los menús, sin excepciones
+      const allMenus = Array.isArray(MENU_STRUCTURE) ? [...MENU_STRUCTURE] : []
+      const sortedMenu = allMenus.sort((a, b) => (a.orden || 999) - (b.orden || 999))
+      
+      console.error('✅ Total menús a mostrar:', sortedMenu.length)
+      console.error('✅ Menús disponibles:')
+      sortedMenu.forEach((m, idx) => {
+        console.error(`   ${idx + 1}. ${m.label} (${m.code}, orden: ${m.orden})`)
+        if (m.children) {
+          m.children.forEach((child, cIdx) => {
+            console.error(`      ${cIdx + 1}. ${child.label} (${child.code})`)
+          })
+        }
+      })
+      
+      // Verificar específicamente Gestión Financiera
+      const gestionFinanciera = sortedMenu.find(m => m.code === 'gestion-financiera')
+      if (gestionFinanciera) {
+        console.error('✅✅✅ GESTIÓN FINANCIERA ENCONTRADA EN MENÚ ✅✅✅')
+      } else {
+        console.error('❌❌❌ GESTIÓN FINANCIERA NO ENCONTRADA EN MENÚ ❌❌❌')
       }
-      return allowedCodes.has(item.code)
-    })
-  }, [availableMenuItems, permissions, userInfo])
+      
+      console.error('🔄 ===== FIN CALCULANDO VISIBLE MENU ITEMS =====')
+      return sortedMenu
+    } catch (error) {
+      console.error('❌ ERROR al calcular menús:', error)
+      // En caso de error, retornar MENU_STRUCTURE directamente
+      return Array.isArray(MENU_STRUCTURE) ? [...MENU_STRUCTURE].sort((a, b) => (a.orden || 999) - (b.orden || 999)) : []
+    }
+  }, [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -299,7 +325,34 @@ function Dashboard({ user, onLogout }) {
           `}
         >
           <nav className="px-3 space-y-1">
-            {visibleMenuItems.map((item) => {
+            {/* Indicador visual de debug - SIEMPRE visible para diagnóstico */}
+            <div className="mb-2 p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded text-xs text-yellow-800 dark:text-yellow-200 border-2 border-yellow-400 dark:border-yellow-600">
+              <strong>🔍 DEBUG MENÚ:</strong>
+              <div className="mt-1">
+                <div>• Menús cargados: {visibleMenuItems.length}</div>
+                <div>• Rol usuario: {userInfo?.rol || (loadingUserInfo ? 'Cargando...' : 'Backend no disponible - Modo desarrollo')}</div>
+                <div>• Loading: {loadingUserInfo ? 'Sí' : 'No'}</div>
+                <div>• userInfo existe: {userInfo ? 'Sí' : 'No'}</div>
+                <div>• MENU_STRUCTURE total: {MENU_STRUCTURE.length}</div>
+                {visibleMenuItems.find(m => m.code === 'gestion-financiera') ? (
+                  <div className="mt-1 text-green-600 dark:text-green-400 font-bold">✅ Gestión Financiera ENCONTRADA en visibleMenuItems</div>
+                ) : (
+                  <div className="mt-1 text-red-600 dark:text-red-400 font-bold">❌ Gestión Financiera NO encontrada en visibleMenuItems</div>
+                )}
+                {MENU_STRUCTURE.find(m => m.code === 'gestion-financiera') ? (
+                  <div className="mt-1 text-green-600 dark:text-green-400">✅ Gestión Financiera existe en MENU_STRUCTURE</div>
+                ) : (
+                  <div className="mt-1 text-red-600 dark:text-red-400">❌ Gestión Financiera NO existe en MENU_STRUCTURE</div>
+                )}
+                <div className="mt-1 text-xs break-all">
+                  Códigos: {visibleMenuItems.map(m => m.code).join(', ') || 'NINGUNO'}
+                </div>
+              </div>
+            </div>
+            {visibleMenuItems.length === 0 && loadingUserInfo && (
+              <div className="px-3 py-2 text-sm text-secondary-500">Cargando menú...</div>
+            )}
+            {[...visibleMenuItems].sort((a, b) => (a.orden || 999) - (b.orden || 999)).map((item) => {
               const hasSubmenu = Array.isArray(item.children) && item.children.length > 0
               const isExpanded = expandedMenu === item.code
               const isActive = activeView === item.view_key && !hasSubmenu
@@ -331,7 +384,7 @@ function Dashboard({ user, onLogout }) {
 
                   {hasSubmenu && isExpanded && !sidebarCollapsed && (
                     <div className="ml-4 mt-1 space-y-1 animate-fade-in">
-                      {item.children.map((child) => (
+                      {[...(item.children || [])].sort((a, b) => (a.orden || 999) - (b.orden || 999)).map((child) => (
                         <button
                           key={child.code}
                           onClick={() => handleSubmenuClick(child)}
@@ -418,6 +471,9 @@ function Dashboard({ user, onLogout }) {
             )}
             {activeView === 'clientes' && <GestionCliente userInfo={userInfo} />}
             {activeView === 'roles' && userInfo?.rol === 'admin' && <GestionRoles userInfo={userInfo} />}
+            {activeView === 'bancos' && <GestionBancos userInfo={userInfo} />}
+            {activeView === 'conceptos-ingreso' && <GestionConceptosIngreso userInfo={userInfo} />}
+            {activeView === 'ingresos' && <GestionIngresos userInfo={userInfo} />}
           </div>
         </main>
       </div>

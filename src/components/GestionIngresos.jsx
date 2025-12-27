@@ -58,13 +58,13 @@ function GestionIngresos({ userInfo }) {
   }, [])
 
   useEffect(() => {
-    if (formulario.banco) {
+    if (formulario.banco && mostrarModal) {
       loadCuentasBancarias()
-    } else {
+    } else if (!formulario.banco && mostrarModal) {
       setCuentasBancariasFiltradas([])
       setFormulario(prev => ({ ...prev, cuenta_bancaria_id: null }))
     }
-  }, [formulario.banco])
+  }, [formulario.banco, mostrarModal])
 
   useEffect(() => {
     if (formulario.concepto_ingreso === 'Pago contrato') {
@@ -103,6 +103,15 @@ function GestionIngresos({ userInfo }) {
     }
   }
 
+  // Función helper para obtener el nombre del contratante
+  const obtenerNombreContratante = (cliente) => {
+    if (!cliente) return ''
+    // Priorizar razon_social (empresas), luego nombre completo (personas naturales)
+    return cliente.razon_social || 
+           `${cliente.nombre1 || ''} ${cliente.apellido1 || ''}`.trim() ||
+           cliente.nombre || ''
+  }
+
   const loadCuentasBancarias = async () => {
     try {
       const response = await bancosService.searchByBanco(formulario.banco, buscarCuentaBancaria)
@@ -120,16 +129,21 @@ function GestionIngresos({ userInfo }) {
       const contratosData = response.data || []
       setContratos(contratosData)
       
-      // Filtrar contratos según búsqueda
-      const termino = buscarContrato.toLowerCase()
-      const filtrados = contratosData.filter(contrato => {
-        const numero = contrato.numero_contrato || ''
-        const clienteNombre = contrato.cliente?.razon_social || 
-                             `${contrato.cliente?.nombre1 || ''} ${contrato.cliente?.apellido1 || ''}`.trim()
-        return numero.toLowerCase().includes(termino) || 
-               clienteNombre.toLowerCase().includes(termino)
-      })
-      setContratosFiltrados(filtrados)
+      // Filtrar contratos según búsqueda - si no hay búsqueda, mostrar todos
+      const termino = buscarContrato.trim().toLowerCase()
+      if (!termino) {
+        // Si no hay término de búsqueda, mostrar todos los contratos
+        setContratosFiltrados(contratosData)
+      } else {
+        // Filtrar por búsqueda
+        const filtrados = contratosData.filter(contrato => {
+          const numero = contrato.numero_contrato || ''
+          const clienteNombre = obtenerNombreContratante(contrato.cliente)
+          return numero.toLowerCase().includes(termino) || 
+                 clienteNombre.toLowerCase().includes(termino)
+        })
+        setContratosFiltrados(filtrados)
+      }
     } catch (error) {
       console.error('Error al cargar contratos:', error)
       setContratos([])
@@ -152,22 +166,113 @@ function GestionIngresos({ userInfo }) {
 
   const abrirModal = (ingreso = null) => {
     setIngresoEnEdicion(ingreso)
+    setEstado({ tipo: null, mensaje: null })
+    setMostrarModal(true)
     
-    // Obtener banco del objeto cuenta_bancaria si existe
+    // Si estamos editando, cargar el ingreso completo desde el backend
+    if (ingreso?.id) {
+      ingresosService.getById(ingreso.id)
+        .then(response => {
+          if (response.data) {
+            const ingresoCompleto = response.data
+            
+            // Obtener datos para el formulario
+            const bancoNombre = ingresoCompleto.banco || ingresoCompleto.cuenta_bancaria?.banco_nombre || ''
+            const conceptoNombre = ingresoCompleto.concepto_ingreso || ingresoCompleto.concepto_ingreso_obj?.nombre || 'Pago contrato'
+            
+            // Preparar texto de cuenta bancaria si existe
+            let textoCuentaBancaria = ''
+            if (ingresoCompleto.cuenta_bancaria) {
+              textoCuentaBancaria = `${ingresoCompleto.cuenta_bancaria.tipo_cuenta} - ${ingresoCompleto.cuenta_bancaria.numero_cuenta}`
+            }
+            
+            // Preparar texto de contrato si existe
+            let textoContrato = ''
+            if (ingresoCompleto.contrato) {
+              const clienteNombre = obtenerNombreContratante(ingresoCompleto.contrato.cliente)
+              if (clienteNombre && ingresoCompleto.contrato.numero_contrato) {
+                textoContrato = `${clienteNombre} - ${ingresoCompleto.contrato.numero_contrato}`
+              } else if (ingresoCompleto.contrato.numero_contrato) {
+                textoContrato = ingresoCompleto.contrato.numero_contrato
+              }
+            }
+            
+            setFormulario({
+              fecha_ingreso: ingresoCompleto.fecha_ingreso ? ingresoCompleto.fecha_ingreso.split('T')[0] : new Date().toISOString().split('T')[0],
+              concepto_ingreso: conceptoNombre,
+              banco: bancoNombre,
+              cuenta_bancaria_id: ingresoCompleto.cuenta_bancaria_id || null,
+              valor_ingreso: ingresoCompleto.valor_ingreso ? ingresoCompleto.valor_ingreso.toString() : '',
+              contrato_id: ingresoCompleto.contrato_id || null
+            })
+            
+            // Establecer los textos de búsqueda para mostrar los valores seleccionados
+            setBuscarCuentaBancaria(textoCuentaBancaria)
+            setBuscarContrato(textoContrato)
+            
+            // Cargar las cuentas bancarias para el banco seleccionado
+            if (bancoNombre) {
+              // Primero actualizar el formulario con el banco, luego cargar cuentas
+              setTimeout(() => {
+                // Usar el banco del formulario que ya fue actualizado
+                setFormulario(prev => ({ ...prev, banco: bancoNombre }))
+                setTimeout(() => {
+                  loadCuentasBancarias()
+                }, 100)
+              }, 100)
+            }
+            
+            // Cargar TODOS los contratos cuando el concepto es "Pago contrato"
+            // Esto asegura que todos los contratos estén disponibles en el dropdown
+            if (conceptoNombre === 'Pago contrato') {
+              // Limpiar búsqueda para mostrar todos los contratos
+              setBuscarContrato(textoContrato || '')
+              setTimeout(() => {
+                loadContratos()
+              }, 300)
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Error al cargar ingreso completo:', error)
+          // Usar los datos que ya tenemos del ingreso
+          inicializarFormulario(ingreso)
+        })
+    } else {
+      // Si es un ingreso nuevo, inicializar formulario vacío
+      inicializarFormulario(null)
+    }
+  }
+  
+  const inicializarFormulario = (ingreso) => {
     const bancoNombre = ingreso?.banco || ingreso?.cuenta_bancaria?.banco_nombre || ''
+    const conceptoNombre = ingreso?.concepto_ingreso || ingreso?.concepto_ingreso_obj?.nombre || 'Pago contrato'
     
     setFormulario({
       fecha_ingreso: ingreso?.fecha_ingreso ? ingreso.fecha_ingreso.split('T')[0] : new Date().toISOString().split('T')[0],
-      concepto_ingreso: ingreso?.concepto_ingreso || 'Pago contrato',
+      concepto_ingreso: conceptoNombre,
       banco: bancoNombre,
       cuenta_bancaria_id: ingreso?.cuenta_bancaria_id || null,
       valor_ingreso: ingreso?.valor_ingreso ? ingreso.valor_ingreso.toString() : '',
       contrato_id: ingreso?.contrato_id || null
     })
-    setBuscarCuentaBancaria('')
-    setBuscarContrato('')
-    setEstado({ tipo: null, mensaje: null })
-    setMostrarModal(true)
+    
+    if (ingreso?.cuenta_bancaria) {
+      setBuscarCuentaBancaria(`${ingreso.cuenta_bancaria.tipo_cuenta} - ${ingreso.cuenta_bancaria.numero_cuenta}`)
+    } else {
+      setBuscarCuentaBancaria('')
+    }
+    
+    if (ingreso?.contrato) {
+      const clienteNombre = obtenerNombreContratante(ingreso.contrato.cliente)
+      if (clienteNombre && ingreso.contrato.numero_contrato) {
+        setBuscarContrato(`${clienteNombre} - ${ingreso.contrato.numero_contrato}`)
+      } else {
+        setBuscarContrato(ingreso.contrato.numero_contrato || '')
+      }
+    } else {
+      setBuscarContrato('')
+    }
   }
 
   const cerrarModal = () => {
@@ -236,10 +341,10 @@ function GestionIngresos({ userInfo }) {
         return
       }
 
+      // Preparar datos - NO incluir 'banco' porque no existe esa columna en la tabla
       const ingresoData = {
         fecha_ingreso: formulario.fecha_ingreso,
         concepto_ingreso: formulario.concepto_ingreso,
-        banco: formulario.banco,
         cuenta_bancaria_id: formulario.cuenta_bancaria_id,
         valor_ingreso: valorNumerico,
         contrato_id: formulario.concepto_ingreso === 'Pago contrato' ? formulario.contrato_id : null
@@ -253,8 +358,27 @@ function GestionIngresos({ userInfo }) {
         setEstado({ tipo: 'success', mensaje: 'Ingreso creado correctamente' })
       }
 
+      // Cerrar el modal primero para evitar que se reabra
+      setMostrarModal(false)
+      setIngresoEnEdicion(null)
+      setEstado({ tipo: null, mensaje: null })
+      
+      // Limpiar el formulario después de cerrar el modal
+      setFormulario({
+        fecha_ingreso: new Date().toISOString().split('T')[0],
+        concepto_ingreso: 'Pago contrato',
+        banco: '',
+        cuenta_bancaria_id: null,
+        valor_ingreso: '',
+        contrato_id: null
+      })
+      setBuscarCuentaBancaria('')
+      setBuscarContrato('')
+      setMostrarCuentasBancarias(false)
+      setMostrarContratos(false)
+      
+      // Recargar datos
       await loadInitialData()
-      setTimeout(() => cerrarModal(), 600)
     } catch (error) {
       console.error('Error al guardar ingreso:', error)
       setEstado({
@@ -274,9 +398,11 @@ function GestionIngresos({ userInfo }) {
 
   const seleccionarContrato = (contrato) => {
     setFormulario(prev => ({ ...prev, contrato_id: contrato.id }))
-    const clienteNombre = contrato.cliente?.razon_social || 
-                         `${contrato.cliente?.nombre1 || ''} ${contrato.cliente?.apellido1 || ''}`.trim()
-    setBuscarContrato(`${clienteNombre} - ${contrato.numero_contrato}`)
+    const clienteNombre = obtenerNombreContratante(contrato.cliente)
+    const textoContrato = clienteNombre && contrato.numero_contrato
+      ? `${clienteNombre} - ${contrato.numero_contrato}`
+      : contrato.numero_contrato || ''
+    setBuscarContrato(textoContrato)
     setMostrarContratos(false)
   }
 
@@ -299,8 +425,7 @@ function GestionIngresos({ userInfo }) {
 
   const getContratoDisplay = (ingreso) => {
     if (ingreso.contrato) {
-      const clienteNombre = ingreso.contrato.cliente?.razon_social || 
-                           `${ingreso.contrato.cliente?.nombre1 || ''} ${ingreso.contrato.cliente?.apellido1 || ''}`.trim()
+      const clienteNombre = obtenerNombreContratante(ingreso.contrato.cliente)
       if (clienteNombre && ingreso.contrato.numero_contrato) {
         return `${clienteNombre} - ${ingreso.contrato.numero_contrato}`
       }
@@ -582,8 +707,10 @@ function GestionIngresos({ userInfo }) {
                           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                         }}>
                           {contratosFiltrados.map((contrato) => {
-                            const clienteNombre = contrato.cliente?.razon_social || 
-                                                 `${contrato.cliente?.nombre1 || ''} ${contrato.cliente?.apellido1 || ''}`.trim()
+                            const clienteNombre = obtenerNombreContratante(contrato.cliente)
+                            const textoContrato = clienteNombre && contrato.numero_contrato
+                              ? `${clienteNombre} - ${contrato.numero_contrato}`
+                              : contrato.numero_contrato || '-'
                             return (
                               <div
                                 key={contrato.id}
@@ -596,7 +723,7 @@ function GestionIngresos({ userInfo }) {
                                 onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
                                 onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                               >
-                                {clienteNombre} - {contrato.numero_contrato}
+                                {textoContrato}
                               </div>
                             )
                           })}
